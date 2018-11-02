@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Notify Put</string>
+    <string name="howto">Please start on your web server e.g.\n\n
+    ./notify_store /srv/www/ugly.example.de/here/file.txt 58000 -d\n
+And on your linux desktop system e.g.\n\n
+    ./notify_get ugly.example.de 80 /here/file.txt 300</string>
+    <string name="ok">ok</string>
+    <string name="sorry">Sorry, but \'%s\' needs really access to
+        your notifications. You have to add these access in
+        your phone preferences!</string>
+</resources>

@@ -1,0 +1,7 @@
+[2018-10-25T13:54:59]
+app_name=click.dummer.notify_get
+summary=hallo
+body=2A2E3F2A383F7146227E26
+expire-timeout=50000
+
+-> 22 zeichen = 11 chars: in dem Fall "jochen || b"
