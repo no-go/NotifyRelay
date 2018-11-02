@@ -18,3 +18,4 @@ get and decode it and put them to the linux desktop message bus.
 - utf8 not working
 - missing a timestamp
 - password is compiled in notify_get code
+- better handling, if no access to the internet exists (notify_get)
