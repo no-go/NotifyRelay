@@ -1,6 +1,6 @@
 # Notify Relay
 
-Using Cipher Block Chaining (CBC) and stange phrases to publish 7 android
+Using Cipher Block Chaining (CBC) and strange phrases to publish 7 android
 messages (all kind of messages) with the `notify_put` App. Process these
 strange but secure coded messages with the c++ coded daemon `notify_store`.
 Use on all Laptops or other Linux device the `notify_get` daemon, to
