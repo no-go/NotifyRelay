@@ -12,10 +12,12 @@ get and decode it and put them to the linux desktop message bus.
 - `notify_get` TCP http GET from the webserver, decode, put to linux message bus
 - servers only see coded stuff
 
+![Sketch](concept.jpg)
 
 ## Bugs, Todos
 
 - utf8 not working
 - missing a timestamp
+- missing limit to store with `notify_store` and putting verification
 - password is compiled in notify_get code
 - DONE: better handling, if no access to the internet exists (notify_get)
