@@ -28,6 +28,7 @@ int refreshSec;
 std::string get;
 long unsigned maxlines = 0;
 std::locale loc;
+bool debugmode = false;
 
 void extractNew(std::string header, std::vector<std::string> & datas) {
     // @todo extract "Last-Modified: Sun, 21 Oct 2018 09:38:04 GMT" ??
@@ -93,7 +94,7 @@ void strangeDecode(std::vector<std::string> & datas) {
             for (int i=0; i<16; ++i) {
                 std::string sub = l.substr(processed);
                 if (sub.find("\n") > 0) {
-                    //printf("'%s' starts with '%s' ?\n", sub.c_str(), phrases[partid%6][i].c_str());
+                    if (debugmode) printf("'%s' starts with '%s' ?\n", sub.substr(0, 4).c_str(), phrases[partid%6][i].c_str());
                     if ( sub.find(phrases[partid%6][i]) == 0) {
                         if (i < 10) {
                             ss << (char) (i + '0');
@@ -133,7 +134,7 @@ void strangeDecode(std::vector<std::string> & datas) {
         }
 
         l = decoded.str();
-        //printf("%s\n", decoded.str().c_str());
+        if (debugmode) printf("%s\n", decoded.str().c_str());
     }
 }
 
@@ -221,7 +222,7 @@ void daemonProcess(void) {
         }
         close(s);
         maxlines = datas.size();
-        //printf("%ld lines readed\n", datas.size());
+        if (debugmode) printf("%ld lines readed\n", datas.size());
         //for (auto l : datas) printf("     %s\n", l.c_str());
         extractNew(header, datas);
         strangeDecode(datas);
@@ -239,8 +240,9 @@ void daemonProcess(void) {
 int main(int argc, char *argv[]) {
     if (argc < 5) {
         printf("Hint Usages\n===========\n"
-            "%s [host] [port] [get] [refresh sec]\n",
-            argv[0]
+            "%s [host] [port] [get] [refresh sec]\n"
+            "%s [host] [port] [get] [refresh sec] debug\n",
+            argv[0], argv[0]
         );
         return -1;
     }
@@ -248,7 +250,11 @@ int main(int argc, char *argv[]) {
     port = std::atoi(argv[2]);
     get = argv[3];
     refreshSec = std::atoi(argv[4]);
-    
+    if (argc == 6) {
+        debugmode = true;
+        daemonProcess();
+        return 0;
+    }
 
     pid_t pid;
     pid = fork();
@@ -263,6 +269,10 @@ int main(int argc, char *argv[]) {
     }
     // fork with pid=0 is running daemon
 
-    daemonProcess();
+    while (1==1) {
+        daemonProcess();
+        // fallback if something went wrong
+        sleep(refreshSec);
+    }
     return 0;
 }
