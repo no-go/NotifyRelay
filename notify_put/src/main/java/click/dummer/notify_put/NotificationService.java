@@ -20,10 +20,14 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
+import java.util.Locale;
 
 public class NotificationService extends NotificationListenerService {
     public static final String SPLITTOKEN = " || ";
+    public static final String DATETIME_FORMAT = "ssmmHH dd.MM.";
     public static final byte[] INIVECTOR = "3262737X857900719147446620464".getBytes(StandardCharsets.US_ASCII);
     private String TAG = this.getClass().getSimpleName();
     private SharedPreferences mPreferences;
@@ -44,6 +48,7 @@ public class NotificationService extends NotificationListenerService {
 
     @Override
     public void onNotificationPosted(StatusBarNotification sbn) {
+        SimpleDateFormat formatOut = new SimpleDateFormat(DATETIME_FORMAT, Locale.ENGLISH);
         Intent i = new Intent("click.dummer.notify_put.NOTIFICATION_LISTENER");
         mPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
@@ -62,7 +67,8 @@ public class NotificationService extends NotificationListenerService {
         try {
             msg4 = extras.getCharSequence("android.text").toString();
             Log.d(TAG, "title "+title);
-            Log.d(TAG, "pack " + getPackageName());
+            Log.d(TAG, "pack " + pack);
+            // Log.d(TAG, "pack " + getPackageName());
             Log.d(TAG, "ticker " +msg);
             Log.d(TAG, "text "+msg2);
             Log.d(TAG, "big.text "+msg3);
@@ -88,7 +94,14 @@ public class NotificationService extends NotificationListenerService {
         lastPost  = msg;
         lastTitle = title;
 
-        sendNetBroadcast((title + SPLITTOKEN + msg).trim());
+        sendNetBroadcast(
+                (formatOut.format(new Date()) +
+                        SPLITTOKEN +
+                        pack + " " +
+                        title + ": " +
+                        msg
+                ).trim()
+        );
         i.putExtra("notification_event", msg);
         sendBroadcast(i);
     }

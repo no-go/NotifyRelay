@@ -15,8 +15,9 @@
 
 #define SPLITTOKEN      " || "
 #define SPLITTOKEN_LEN  4
-#define PHRASESFILE     "phrase"
+#define PHRASESFILE     "/phrase"
 #define IGNORELINEAFTER 50000
+#define BUFFER          3
 
 std::string INIVECTOR = "3262737X857900719147446620464";
 std::string pass      = "abc123"; // @todo fill this in a other way!
@@ -29,6 +30,8 @@ std::string get;
 long unsigned maxlines = 0;
 std::locale loc;
 bool debugmode = false;
+
+std::string execPath;
 
 void extractNew(std::string header, std::vector<std::string> & datas) {
     // @todo extract "Last-Modified: Sun, 21 Oct 2018 09:38:04 GMT" ??
@@ -58,7 +61,9 @@ void extractNew(std::string header, std::vector<std::string> & datas) {
 void strangeDecode(std::vector<std::string> & datas) {
 
     std::ifstream myfile;
-    myfile.open(PHRASESFILE);
+    std::string here = execPath;
+    here += PHRASESFILE;
+    myfile.open(here.c_str());
     std::vector< std::vector<std::string> > phrases;
     std::vector<std::string> part;
     if (myfile.is_open()) {
@@ -141,7 +146,9 @@ void strangeDecode(std::vector<std::string> & datas) {
 void notifyThis(std::string title, std::string msg, int usec) {
     NotifyNotification *notify;
     notify_init("click.dummer.notify_get");
-    notify = notify_notification_new(title.c_str(), msg.c_str(), nullptr);
+    std::string here = execPath;
+    here += "/icon.png";
+    notify = notify_notification_new(title.c_str(), msg.c_str(), here.c_str());
     notify_notification_set_timeout(notify, usec); // -1 for ever?!
     notify_notification_show(notify, nullptr);
     g_object_unref(G_OBJECT (notify));
@@ -221,7 +228,7 @@ void daemonProcess(void) {
             }
         }
         close(s);
-        maxlines = datas.size();
+        maxlines = datas.size() + BUFFER;
         if (debugmode) printf("%ld lines readed\n", datas.size());
         //for (auto l : datas) printf("     %s\n", l.c_str());
         extractNew(header, datas);
@@ -238,6 +245,8 @@ void daemonProcess(void) {
 }
 
 int main(int argc, char *argv[]) {
+    std::string dummy = realpath(argv[0], nullptr);
+    execPath = dummy.substr(0, dummy.rfind("/"));
     if (argc < 5) {
         printf("Hint Usages\n===========\n"
             "%s [host] [port] [get] [refresh sec]\n"
@@ -250,6 +259,7 @@ int main(int argc, char *argv[]) {
     port = std::atoi(argv[2]);
     get = argv[3];
     refreshSec = std::atoi(argv[4]);
+    notifyThis("Notify Get", "I am started!", 10000);
     if (argc == 6) {
         debugmode = true;
         daemonProcess();
