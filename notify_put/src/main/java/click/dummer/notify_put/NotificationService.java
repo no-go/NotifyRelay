@@ -109,9 +109,8 @@ public class NotificationService extends NotificationListenerService {
         lastPost  = msg;
 
         sendNetBroadcast(
-                (formatOut.format(new Date()) +
+                (formatOut.format(new Date()) + " [" + pack + "]" +
                         SPLITTOKEN +
-                        pack + " " +
                         title + ": " +
                         msg
                 ).trim()
