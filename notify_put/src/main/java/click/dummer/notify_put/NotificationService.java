@@ -3,6 +3,9 @@ package click.dummer.notify_put;
 import android.app.Notification;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
@@ -29,7 +32,7 @@ import java.util.Locale;
 public class NotificationService extends NotificationListenerService {
     public static final String SPLITTOKEN = " || ";
     public static final String DATETIME_FORMAT = "ssmmHH dd.MM.";
-    public static final byte[] INIVECTOR = "3262737X857900719147446620464".getBytes(StandardCharsets.UTF_8);
+    public static final byte[] INIVECTOR = "3262737X857900719147446620464".getBytes(StandardCharsets.US_ASCII);
     private String TAG = this.getClass().getSimpleName();
     private SharedPreferences mPreferences;
 
@@ -82,6 +85,15 @@ public class NotificationService extends NotificationListenerService {
         if (msg4 != null && msg4.length()>0) msg = msg4;
         if (msg2 != null && msg2.length()>0) msg = msg2;
         if (msg3 != null && msg3.length()>0) msg = msg3;
+
+        String name="NULL";
+        try
+        {
+            ApplicationInfo appi = this.getPackageManager().getApplicationInfo(pack, 0);
+            Drawable icon = getPackageManager().getApplicationIcon(appi);
+            pack = getPackageManager().getApplicationLabel(appi).toString();
+
+        } catch (PackageManager.NameNotFoundException e) { }
 
         // catch not normal message .-----------------------------
         if (!sbn.isClearable()) return;
@@ -216,6 +228,7 @@ public class NotificationService extends NotificationListenerService {
             Socket s = new Socket(address, port);
             PrintWriter outp = new PrintWriter(s.getOutputStream());
             outp.println(messageStr);
+            outp.flush();
             s.close();
 
             Log.i(TAG, getClass().getName() + "packets sent to: " + address.getHostAddress());

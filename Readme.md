@@ -16,11 +16,8 @@ get and decode it and put them to the linux desktop message bus.
 
 ## Bugs, Todos
 
-- utf8 not working
 - missing limit to store with `notify_store` and putting verification
 - password is compiled in notify_get code
-- DONE: missing a timestamp
-- DONE: better handling, if no access to the internet exists (notify_get)
 
 ## License
 

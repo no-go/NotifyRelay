@@ -16,7 +16,7 @@
 #define SPLITTOKEN      " || "
 #define SPLITTOKEN_LEN  4
 #define PHRASESFILE     "/phrase"
-#define IGNORELINEAFTER 50000
+#define IGNORELINEAFTER 320
 #define BUFFER          3
 
 std::string INIVECTOR = "3262737X857900719147446620464";
