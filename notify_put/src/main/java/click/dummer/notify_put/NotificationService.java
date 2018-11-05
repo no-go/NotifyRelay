@@ -9,6 +9,7 @@ import android.os.StrictMode;
 import android.preference.PreferenceManager;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
+import android.text.SpannableString;
 import android.util.Log;
 
 import java.io.ByteArrayOutputStream;
@@ -28,12 +29,11 @@ import java.util.Locale;
 public class NotificationService extends NotificationListenerService {
     public static final String SPLITTOKEN = " || ";
     public static final String DATETIME_FORMAT = "ssmmHH dd.MM.";
-    public static final byte[] INIVECTOR = "3262737X857900719147446620464".getBytes(StandardCharsets.US_ASCII);
+    public static final byte[] INIVECTOR = "3262737X857900719147446620464".getBytes(StandardCharsets.UTF_8);
     private String TAG = this.getClass().getSimpleName();
     private SharedPreferences mPreferences;
 
     private String lastPost = "";
-    private String lastTitle = "";
 
     @Override
     public void onCreate() {
@@ -57,7 +57,11 @@ public class NotificationService extends NotificationListenerService {
         String title = extras.getString(Notification.EXTRA_TITLE);
         String pack = sbn.getPackageName();
         String msg = (String) noti.tickerText;
-        String msg2 = extras.getString(Notification.EXTRA_TEXT);
+        Object obj = extras.get(Notification.EXTRA_TEXT);
+        String msg2 = null;
+        if (obj != null) {
+            msg2 = obj.toString();
+        }
         String msg3 = null;
         String msg4 = null;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -65,10 +69,10 @@ public class NotificationService extends NotificationListenerService {
         }
 
         try {
-            msg4 = extras.getCharSequence("android.text").toString();
+            SpannableString sp = (SpannableString) extras.get("android.text");
+            msg4 = sp.toString();
             Log.d(TAG, "title "+title);
             Log.d(TAG, "pack " + pack);
-            // Log.d(TAG, "pack " + getPackageName());
             Log.d(TAG, "ticker " +msg);
             Log.d(TAG, "text "+msg2);
             Log.d(TAG, "big.text "+msg3);
@@ -89,10 +93,8 @@ public class NotificationService extends NotificationListenerService {
         }
         if (msg == null) return;
         if (msg.equals(lastPost) ) return;
-        if (title.equals(lastTitle) ) msg = msg.replaceFirst(title, "");
 
         lastPost  = msg;
-        lastTitle = title;
 
         sendNetBroadcast(
                 (formatOut.format(new Date()) +
@@ -130,14 +132,12 @@ public class NotificationService extends NotificationListenerService {
             ins.close();
         } catch (IOException e) {}
         String[] phases = outputStream.toString().split("~\n");
-        Log.v(TAG, String.valueOf(phases.length));
         ArrayList<String[]> phrases = new ArrayList<>();
         for (String phrasi : phases) {
-            //Log.v(TAG, phrasi);
             phrases.add(phrasi.split("\n"));
         }
 
-        byte[] data = msg.getBytes(StandardCharsets.US_ASCII);
+        byte[] data = msg.getBytes(StandardCharsets.UTF_8);
         byte[] coded = new byte[data.length];
         for (int i=0; i<data.length; i++) {
             if (i<INIVECTOR.length) {
@@ -191,15 +191,6 @@ public class NotificationService extends NotificationListenerService {
                 dummy = phrases.get(ph)[15];
             }
 
-            if (ph == 0) {
-                char first = Character.toUpperCase(dummy.charAt(0));
-                dummy = first + dummy.substring(1);
-            }
-            if (ph == phrases.size()-1) {
-                dummy += ". ";
-            } else {
-                dummy += " ";
-            }
             sb.append(dummy);
         }
         return sb.toString();
@@ -223,18 +214,9 @@ public class NotificationService extends NotificationListenerService {
             int port = Integer.parseInt(mPreferences.getString("port", "58000").trim());
 
             Socket s = new Socket(address, port);
-            PrintWriter outp = new PrintWriter(s.getOutputStream(), true);
+            PrintWriter outp = new PrintWriter(s.getOutputStream());
             outp.println(messageStr);
             s.close();
-
-            /* UDP
-            //Open a random port to send the package
-            DatagramSocket socket = new DatagramSocket();
-            socket.setBroadcast(true);
-            byte[] sendData = messageStr.getBytes();
-            DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, address, port);
-            socket.send(sendPacket);
-            */
 
             Log.i(TAG, getClass().getName() + "packets sent to: " + address.getHostAddress());
         } catch (IOException e) {
