@@ -2,6 +2,5 @@
 /.gradle/**/*
 /.idea/**/*
 /local.properties
-/notify_put/build
+/app/build/**/*
 /build
-/captures

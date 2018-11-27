@@ -1,4 +1,4 @@
-package click.dummer.notify_put;
+package click.dummer.notify_to_jabber;
 
 import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
@@ -7,27 +7,23 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import java.io.UnsupportedEncodingException;
 import java.util.Set;
 
 public class MainActivity extends AppCompatActivity {
     private TextView txtView;
-    private EditText hostName;
-    private EditText portEdit;
-    private EditText pass;
+    private EditText fromJIDedit;
+    private EditText toJIDedit;
+    private EditText passEdit;
 
     private NotificationReceiver nReceiver;
     private SharedPreferences mPreferences;
@@ -39,9 +35,9 @@ public class MainActivity extends AppCompatActivity {
         txtView = (TextView) findViewById(R.id.textView);
         nReceiver = new NotificationReceiver();
         mPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        hostName = (EditText) findViewById(R.id.hostEdit);
-        portEdit = (EditText) findViewById(R.id.portEdit);
-        pass = (EditText) findViewById(R.id.pass);
+        fromJIDedit = (EditText) findViewById(R.id.fromJIDedit);
+        toJIDedit = (EditText) findViewById(R.id.toJIDedit);
+        passEdit = (EditText) findViewById(R.id.passEdit);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
         getSupportActionBar().setIcon(R.mipmap.ic_launcher);
     }
@@ -64,24 +60,24 @@ public class MainActivity extends AppCompatActivity {
             alertDialogBuilder.show();
         }
 
-        IntentFilter filter = new IntentFilter("click.dummer.notify_put.NOTIFICATION_LISTENER");
+        IntentFilter filter = new IntentFilter("click.dummer.notify_to_jabber.NOTIFICATION_LISTENER");
         registerReceiver(nReceiver, filter);
 
-        String host = "";
-        String port = "";
-        String passw = "";
-        if (mPreferences.contains("hostname")) {
-            host = mPreferences.getString("hostname", "ugly.example.de");
+        String fromJID = "";
+        String toJID = "";
+        String pass = "";
+        if (mPreferences.contains("fromJID")) {
+            fromJID = mPreferences.getString("fromJID", fromJID);
+        }
+        if (mPreferences.contains("toJID")) {
+            toJID = mPreferences.getString("toJID", toJID);
         }
         if (mPreferences.contains("pass")) {
-            passw = mPreferences.getString("pass", passw);
+            pass = mPreferences.getString("pass", pass);
         }
-        if (mPreferences.contains("port")) {
-            port = mPreferences.getString("port", port);
-        }
-        hostName.setText(host.equals("") ? "ugly.example.de" : host);
-        portEdit.setText(port.equals("") ? "58000" : port);
-        pass.setText(passw.equals("") ? "abc123" : passw);
+        fromJIDedit.setText(fromJID);
+        toJIDedit.setText(toJID);
+        passEdit.setText(pass);
     }
 
     @Override
@@ -89,12 +85,12 @@ public class MainActivity extends AppCompatActivity {
         super.onPause();
         unregisterReceiver(nReceiver);
 
-        String host = hostName.getText().toString();
-        String port = portEdit.getText().toString();
-        String passw = pass.getText().toString();
-        mPreferences.edit().putString("hostname", host).apply();
-        mPreferences.edit().putString("port", port).apply();
-        mPreferences.edit().putString("pass", passw).apply();
+        String fromJID = fromJIDedit.getText().toString();
+        String toJID = toJIDedit.getText().toString();
+        String pass = passEdit.getText().toString();
+        mPreferences.edit().putString("fromJID", fromJID).apply();
+        mPreferences.edit().putString("toJID", toJID).apply();
+        mPreferences.edit().putString("pass", pass).apply();
     }
 
     @Override
@@ -103,16 +99,16 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void buttonClicked(View v) {
-        String host = hostName.getText().toString();
-        String port = portEdit.getText().toString();
-        String passw = pass.getText().toString();
-        mPreferences.edit().putString("hostname", host).apply();
-        mPreferences.edit().putString("port", port).apply();
-        mPreferences.edit().putString("pass", passw).apply();
+        String fromJID = fromJIDedit.getText().toString();
+        String toJID = toJIDedit.getText().toString();
+        String pass = passEdit.getText().toString();
+        mPreferences.edit().putString("fromJID", fromJID).apply();
+        mPreferences.edit().putString("toJID", toJID).apply();
+        mPreferences.edit().putString("pass", pass).apply();
 
         NotificationManager nManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         NotificationCompat.Builder ncomp = new NotificationCompat.Builder(this);
-        ncomp.setContentTitle("[myip]");
+        ncomp.setContentTitle("Title");
         ncomp.setContentText("I am the Text from " + getString(R.string.app_name));
         ncomp.setTicker("I am the Ticker");
         ncomp.setSmallIcon(R.mipmap.ic_launcher);
