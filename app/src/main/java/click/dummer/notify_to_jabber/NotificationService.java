@@ -20,6 +20,16 @@ import org.jivesoftware.smack.chat.Chat;
 import org.jivesoftware.smack.chat.ChatManager;
 import org.jivesoftware.smack.tcp.XMPPTCPConnection;
 
+import retrofit2.converter.gson.GsonConverterFactory;
+import retrofit2.Call;
+import retrofit2.Retrofit;
+import retrofit2.http.Body;
+import retrofit2.http.Field;
+import retrofit2.http.GET;
+import retrofit2.http.POST;
+import retrofit2.http.Path;
+import retrofit2.http.Query;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -31,6 +41,27 @@ public class NotificationService extends NotificationListenerService {
 
     private String lastPost = "";
 
+
+    public static class GotifyMessage {
+        public final int priority;
+        public final String title;
+        public final String message;
+
+        public GotifyMessage(int priority, String title, String message) {
+            this.priority = priority;
+            this.title = title;
+            this.message = message;
+        }
+    }
+
+    public interface GotifyMessageService {
+        @POST("/message")
+        Call<GotifyMessage> createMessage(
+                @Query("token") String apptoken,
+                @Body GotifyMessage gotifyMessage
+        );
+    }
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -40,6 +71,13 @@ public class NotificationService extends NotificationListenerService {
     @Override
     public void onDestroy() {
         super.onDestroy();
+    }
+
+    @Override
+    public void onNotificationRemoved(StatusBarNotification sbn) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            super.onNotificationRemoved(sbn);
+        }
     }
 
     @Override
@@ -67,27 +105,32 @@ public class NotificationService extends NotificationListenerService {
 
         try {
             SpannableString sp = (SpannableString) extras.get("android.text");
-            msg4 = sp.toString();
             Log.d(TAG, "title "+title);
             Log.d(TAG, "pack " + pack);
             Log.d(TAG, "ticker " +msg);
             Log.d(TAG, "text "+msg2);
             Log.d(TAG, "big.text "+msg3);
+            if (sp != null) {
+                msg4 = sp.toString();
+            }
             Log.d(TAG, "android.text "+msg4);
-        } catch (Exception e) {}
+        } catch (Exception e) {
+            Log.d(TAG, e.getMessage());
+        }
 
         if (msg4 != null && msg4.length()>0) msg = msg4;
         if (msg2 != null && msg2.length()>0) msg = msg2;
         if (msg3 != null && msg3.length()>0) msg = msg3;
 
         String name="NULL";
-        try
-        {
+        try {
             ApplicationInfo appi = this.getPackageManager().getApplicationInfo(pack, 0);
             icon = getPackageManager().getApplicationIcon(appi);
             pack = getPackageManager().getApplicationLabel(appi).toString();
 
-        } catch (PackageManager.NameNotFoundException e) { }
+        } catch (Exception e) {
+            Log.d(TAG, e.getMessage());
+        }
 
         // catch not normal message .-----------------------------
         if (!sbn.isClearable()) return;
@@ -127,21 +170,54 @@ public class NotificationService extends NotificationListenerService {
                 pass = mPreferences.getString("pass", pass);
             }
 
-            // ------------------------------------------------------------------------------
+            // --------------------------------------------------------------------jabber
             AbstractXMPPConnection connection = new XMPPTCPConnection(
                     fromJID.substring(0, fromJID.lastIndexOf("@")),
                     pass,
                     fromJID.substring(fromJID.lastIndexOf("@")+1)
             );
+
             if (!connection.isConnected()) {
                 connection.connect().login();
             }
 
-            ChatManager chatManager = ChatManager.getInstanceFor(connection);
-            Chat chat = chatManager.createChat(toJID);
-            chat.sendMessage("["+pack+"] " + time + "\n" + title + ": " + message);
-            //connection.disconnect();
-            // ------------------------------------------------------------------------------
+            if (connection.isConnected()) {
+                ChatManager chatManager = ChatManager.getInstanceFor(connection);
+                Chat chat = chatManager.createChat(toJID);
+                chat.sendMessage("["+pack+"] " + time + "\n" + title + ": " + message);
+                //connection.disconnect();
+            }
+
+            // --------------------------------------------------------------------gotify
+
+            String gotifyUrl = "";
+            String appToken = "";
+
+            if (mPreferences.contains("gotifyUrl")) {
+                gotifyUrl = mPreferences.getString("gotifyUrl", gotifyUrl);
+            }
+            if (mPreferences.contains("appToken")) {
+                appToken = mPreferences.getString("appToken", appToken);
+            }
+
+            if (!gotifyUrl.equals("") && !appToken.equals("")) {
+                Retrofit retrofit = new Retrofit.Builder()
+                        .baseUrl(gotifyUrl)
+                        .addConverterFactory(GsonConverterFactory.create())
+                        .build();
+
+                GotifyMessageService gms = retrofit.create(GotifyMessageService.class);
+
+                GotifyMessage gotifyMessage = new GotifyMessage(
+                        4,
+                        pack,
+                        title + ": " + message
+                );
+
+                Call<GotifyMessage> call = gms.createMessage(appToken, gotifyMessage);
+                call.execute();
+            }
+
 
         } catch (Exception e) {
             Log.e(TAG, "Exception: " + e.getMessage());

@@ -25,6 +25,9 @@ public class MainActivity extends AppCompatActivity {
     private EditText toJIDedit;
     private EditText passEdit;
 
+    private EditText gotifyEdit;
+    private EditText gotifyAppToken;
+
     private NotificationReceiver nReceiver;
     private SharedPreferences mPreferences;
 
@@ -38,6 +41,8 @@ public class MainActivity extends AppCompatActivity {
         fromJIDedit = (EditText) findViewById(R.id.fromJIDedit);
         toJIDedit = (EditText) findViewById(R.id.toJIDedit);
         passEdit = (EditText) findViewById(R.id.passEdit);
+        gotifyEdit = (EditText) findViewById(R.id.gotifyEdit);
+        gotifyAppToken = (EditText) findViewById(R.id.gotifyAppToken);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
         getSupportActionBar().setIcon(R.mipmap.ic_launcher);
     }
@@ -66,6 +71,17 @@ public class MainActivity extends AppCompatActivity {
         String fromJID = "";
         String toJID = "";
         String pass = "";
+
+        String gotifyUrl = "";
+        String appToken = "";
+
+        if (mPreferences.contains("gotifyUrl")) {
+            gotifyUrl = mPreferences.getString("gotifyUrl", gotifyUrl);
+        }
+        if (mPreferences.contains("appToken")) {
+            appToken = mPreferences.getString("appToken", appToken);
+        }
+
         if (mPreferences.contains("fromJID")) {
             fromJID = mPreferences.getString("fromJID", fromJID);
         }
@@ -78,6 +94,9 @@ public class MainActivity extends AppCompatActivity {
         fromJIDedit.setText(fromJID);
         toJIDedit.setText(toJID);
         passEdit.setText(pass);
+
+        gotifyEdit.setText(gotifyUrl);
+        gotifyAppToken.setText(appToken);
     }
 
     @Override
@@ -88,9 +107,20 @@ public class MainActivity extends AppCompatActivity {
         String fromJID = fromJIDedit.getText().toString();
         String toJID = toJIDedit.getText().toString();
         String pass = passEdit.getText().toString();
+        String gotifyUrl = gotifyEdit.getText().toString();
+        String appToken = gotifyAppToken.getText().toString();
+
+        if (mPreferences.contains("gotifyUrl")) {
+            gotifyUrl = mPreferences.getString("gotifyUrl", gotifyUrl);
+        }
+        if (mPreferences.contains("appToken")) {
+            appToken = mPreferences.getString("appToken", appToken);
+        }
         mPreferences.edit().putString("fromJID", fromJID).apply();
         mPreferences.edit().putString("toJID", toJID).apply();
         mPreferences.edit().putString("pass", pass).apply();
+        mPreferences.edit().putString("gotifyUrl", gotifyUrl).apply();
+        mPreferences.edit().putString("appToken", appToken).apply();
     }
 
     @Override
@@ -102,9 +132,13 @@ public class MainActivity extends AppCompatActivity {
         String fromJID = fromJIDedit.getText().toString();
         String toJID = toJIDedit.getText().toString();
         String pass = passEdit.getText().toString();
+        String gotifyUrl = gotifyEdit.getText().toString();
+        String appToken = gotifyAppToken.getText().toString();
         mPreferences.edit().putString("fromJID", fromJID).apply();
         mPreferences.edit().putString("toJID", toJID).apply();
         mPreferences.edit().putString("pass", pass).apply();
+        mPreferences.edit().putString("gotifyUrl", gotifyUrl).apply();
+        mPreferences.edit().putString("appToken", appToken).apply();
 
         NotificationManager nManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         NotificationCompat.Builder ncomp = new NotificationCompat.Builder(this);

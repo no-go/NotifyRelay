@@ -5,11 +5,11 @@ android {
 
     defaultConfig {
         applicationId "click.dummer.notify_to_jabber"
-        minSdkVersion 21
+        minSdkVersion 19
         // upload alias
         targetSdkVersion 22
-        versionCode 73
-        versionName "0.73"
+        versionCode 74
+        versionName "0.74"
     }
     buildTypes {
         release {
@@ -29,6 +29,8 @@ dependencies {
     implementation 'com.android.support:appcompat-v7:25.3.1'
     implementation "org.igniterealtime.smack:smack-android:4.1.6"
     implementation "org.igniterealtime.smack:smack-tcp:4.1.6"
+    implementation 'com.squareup.retrofit2:retrofit:2.5.0'
+    implementation 'com.squareup.retrofit2:converter-gson:2.5.0'
 }
 
 configurations {
