@@ -2,15 +2,22 @@
 
 ![Logo](app/src/main/res/mipmap-xhdpi/ic_launcher.png)
 
-Send all Android text notifications to a xmpp jabber account. I
-use [smack](https://github.com/igniterealtime/Smack/) lib for this.
+Sometimes a new giant smartphone is too big for me at parties. It's nice to 
+be able to redirect all your messages to a little old one. In an emergency 
+you can at least answer via SMS. My app redirects almost everything to a 
+Jabber account or to a Gotify server. It's a little everyday hack that I 
+don't want to keep from the FOSS community.
+
+The App sends all Android text notifications to a xmpp jabber account. It
+uses [smack](https://github.com/igniterealtime/Smack/) lib for this.
 
 Alternative: use your [gotify server](https://github.com/gotify/server) and an application token to
-submit the notifications. I use the [Retrofit](https://github.com/square/retrofit) lib for the REST request.
+submit the notifications. It uses the [Retrofit](https://github.com/square/retrofit) lib for the REST request.
+
 
 ## Get the App
 
-You can get a signed APK (4.4.4+) from [here](https://raw.githubusercontent.com/no-go/NotifyRelay/toXMPP/app/release/click.dummer.notify_to_jabber.apk)
+You can get a signed APK (4.4.4+) from [here](https://raw.githubusercontent.com/no-go/NotifyRelay/master/app/release/click.dummer.notify_to_jabber.apk)
 
 ## My App License
 
