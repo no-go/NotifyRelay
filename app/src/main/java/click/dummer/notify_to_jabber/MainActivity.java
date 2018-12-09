@@ -110,12 +110,6 @@ public class MainActivity extends AppCompatActivity {
         String gotifyUrl = gotifyEdit.getText().toString();
         String appToken = gotifyAppToken.getText().toString();
 
-        if (mPreferences.contains("gotifyUrl")) {
-            gotifyUrl = mPreferences.getString("gotifyUrl", gotifyUrl);
-        }
-        if (mPreferences.contains("appToken")) {
-            appToken = mPreferences.getString("appToken", appToken);
-        }
         mPreferences.edit().putString("fromJID", fromJID).apply();
         mPreferences.edit().putString("toJID", toJID).apply();
         mPreferences.edit().putString("pass", pass).apply();
