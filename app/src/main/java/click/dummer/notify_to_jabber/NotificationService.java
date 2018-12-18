@@ -29,11 +29,8 @@ import retrofit2.http.POST;
 import retrofit2.http.Query;
 
 import java.net.HttpURLConnection;
-import java.net.InetAddress;
 import java.net.URL;
-import java.net.UnknownHostException;
 import java.security.KeyStore;
-import java.security.cert.CertPathValidatorException;
 import java.security.cert.Certificate;
 import java.security.cert.X509Certificate;
 import java.text.SimpleDateFormat;
@@ -48,8 +45,6 @@ import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
-
-import org.apache.http.conn.ssl.AllowAllHostnameVerifierHC4;
 
 public class NotificationService extends NotificationListenerService {
     public static final String DATETIME_FORMAT = "dd.MM. HH:mm";
@@ -230,7 +225,7 @@ public class NotificationService extends NotificationListenerService {
             if (conn instanceof HttpsURLConnection) {
                 HttpsURLConnection httpsConn = (HttpsURLConnection) conn;
                 httpsConn.setSSLSocketFactory(SSLCertificateSocketFactory.getInsecure(0, null));
-                httpsConn.setHostnameVerifier(new AllowAllHostnameVerifierHC4());
+                httpsConn.setHostnameVerifier(new MyHostnameVerifier(destinationURL));
             }
             conn.connect();
             Certificate[] certs = ( (HttpsURLConnection) conn).getServerCertificates();
