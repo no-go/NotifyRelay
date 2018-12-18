@@ -31,6 +31,7 @@ dependencies {
     implementation "org.igniterealtime.smack:smack-tcp:4.1.6"
     implementation 'com.squareup.retrofit2:retrofit:2.5.0'
     implementation 'com.squareup.retrofit2:converter-gson:2.5.0'
+    implementation 'org.apache.httpcomponents:httpclient-android:4.3.5.1'
 }
 
 configurations {

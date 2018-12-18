@@ -4,8 +4,8 @@ import android.app.Notification;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageManager;
 import android.graphics.drawable.Drawable;
+import android.net.SSLCertificateSocketFactory;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
@@ -20,19 +20,36 @@ import org.jivesoftware.smack.chat.Chat;
 import org.jivesoftware.smack.chat.ChatManager;
 import org.jivesoftware.smack.tcp.XMPPTCPConnection;
 
+import okhttp3.OkHttpClient;
 import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.Call;
 import retrofit2.Retrofit;
 import retrofit2.http.Body;
-import retrofit2.http.Field;
-import retrofit2.http.GET;
 import retrofit2.http.POST;
-import retrofit2.http.Path;
 import retrofit2.http.Query;
 
+import java.net.HttpURLConnection;
+import java.net.InetAddress;
+import java.net.URL;
+import java.net.UnknownHostException;
+import java.security.KeyStore;
+import java.security.cert.CertPathValidatorException;
+import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.X509TrustManager;
+
+import org.apache.http.conn.ssl.AllowAllHostnameVerifierHC4;
 
 public class NotificationService extends NotificationListenerService {
     public static final String DATETIME_FORMAT = "dd.MM. HH:mm";
@@ -61,6 +78,7 @@ public class NotificationService extends NotificationListenerService {
                 @Body GotifyMessage gotifyMessage
         );
     }
+
 
     @Override
     public void onCreate() {
@@ -170,7 +188,7 @@ public class NotificationService extends NotificationListenerService {
                 pass = mPreferences.getString("pass", pass);
             }
 
-            // --------------------------------------------------------------------jabber
+            // --------------------------------------------------------------------jabber ---------
             AbstractXMPPConnection connection = new XMPPTCPConnection(
                     fromJID.substring(0, fromJID.lastIndexOf("@")),
                     pass,
@@ -188,7 +206,7 @@ public class NotificationService extends NotificationListenerService {
                 //connection.disconnect();
             }
 
-            // --------------------------------------------------------------------gotify
+            // --------------------------------------------------------------------gotify ---------
 
             String gotifyUrl = "";
             String appToken = "";
@@ -200,9 +218,81 @@ public class NotificationService extends NotificationListenerService {
                 appToken = mPreferences.getString("appToken", appToken);
             }
 
+
+            // ---------------------------------ssl handling
+
+
+            // START get cert with ignoring all ssl errors
+
+            Certificate certificate = null;
+            URL destinationURL = new URL(gotifyUrl);
+            HttpURLConnection conn = (HttpURLConnection) destinationURL.openConnection();
+            if (conn instanceof HttpsURLConnection) {
+                HttpsURLConnection httpsConn = (HttpsURLConnection) conn;
+                httpsConn.setSSLSocketFactory(SSLCertificateSocketFactory.getInsecure(0, null));
+                httpsConn.setHostnameVerifier(new AllowAllHostnameVerifierHC4());
+            }
+            conn.connect();
+            Certificate[] certs = ( (HttpsURLConnection) conn).getServerCertificates();
+            Log.d(TAG,"nb = " + certs.length);
+            for (Certificate cert : certs) {
+                Log.d(TAG, cert.toString());
+                if (cert instanceof X509Certificate) {
+                    certificate = cert;
+                    break;
+                }
+            }
+
+            // END cert with ignoring all ssl errors: now we have to compare the signature as alternative way
+
+            if (certificate == null) return;
+            StringBuilder sb = new StringBuilder();
+            for (byte b : ((X509Certificate) certificate).getSignature()) {
+                sb.append(String.format("%02X:", b));
+            }
+            String sig = sb.toString();
+            sig = sig.substring(0, sig.length()-1);
+            Log.d(TAG, sig);
+
+
+            // @todo store signature, compare it, add it to a config or main activity
+
+            // @todo alternative way without all that stuff (not ignoring SSL fail)
+
+
+            // Create a KeyStore containing our trusted CAs
+            String keyStoreType = KeyStore.getDefaultType();
+            KeyStore keyStore = KeyStore.getInstance(keyStoreType);
+            keyStore.load(null, null);
+            keyStore.setCertificateEntry("ca", certificate);
+
+            // Create a TrustManager that trusts the CAs in our KeyStore.
+            String tmfAlgorithm = TrustManagerFactory.getDefaultAlgorithm();
+            TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(tmfAlgorithm);
+            trustManagerFactory.init(keyStore);
+
+            TrustManager[] trustManagers = trustManagerFactory.getTrustManagers();
+            X509TrustManager x509TrustManager = (X509TrustManager) trustManagers[0];
+
+
+            // Create an SSLSocketFactory that uses our TrustManager
+            SSLContext sslContext = SSLContext.getInstance("SSL");
+            sslContext.init(null, new TrustManager[]{x509TrustManager}, null);
+            SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
+
+            //create Okhttp client
+            OkHttpClient client = new OkHttpClient.Builder()
+                    .sslSocketFactory(sslSocketFactory,x509TrustManager)
+                    .hostnameVerifier(new MyHostnameVerifier(destinationURL))
+                    .build();
+
+
+
+
             if (!gotifyUrl.equals("") && !appToken.equals("")) {
                 Retrofit retrofit = new Retrofit.Builder()
                         .baseUrl(gotifyUrl)
+                        .client(client) // ssl handling add on
                         .addConverterFactory(GsonConverterFactory.create())
                         .build();
 
@@ -218,9 +308,21 @@ public class NotificationService extends NotificationListenerService {
                 call.execute();
             }
 
-
         } catch (Exception e) {
             Log.e(TAG, "Exception: " + e.getMessage());
+        }
+    }
+
+    private class MyHostnameVerifier implements HostnameVerifier {
+        private URL shouldHost;
+
+        public MyHostnameVerifier(URL shouldHost) {
+            this.shouldHost = shouldHost;
+        }
+
+        @Override
+        public boolean verify(String hostname, SSLSession sslSession) {
+            return shouldHost.getHost().equals(hostname);
         }
     }
 }
