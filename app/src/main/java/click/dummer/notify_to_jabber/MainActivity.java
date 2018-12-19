@@ -27,6 +27,7 @@ public class MainActivity extends AppCompatActivity {
 
     private EditText gotifyEdit;
     private EditText gotifyAppToken;
+    private EditText gotifyFingerprint;
 
     private NotificationReceiver nReceiver;
     private SharedPreferences mPreferences;
@@ -43,6 +44,7 @@ public class MainActivity extends AppCompatActivity {
         passEdit = (EditText) findViewById(R.id.passEdit);
         gotifyEdit = (EditText) findViewById(R.id.gotifyEdit);
         gotifyAppToken = (EditText) findViewById(R.id.gotifyAppToken);
+        gotifyFingerprint = (EditText) findViewById(R.id.gotifyFingerprint);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
         getSupportActionBar().setIcon(R.mipmap.ic_launcher);
     }
@@ -65,7 +67,9 @@ public class MainActivity extends AppCompatActivity {
             alertDialogBuilder.show();
         }
 
-        IntentFilter filter = new IntentFilter("click.dummer.notify_to_jabber.NOTIFICATION_LISTENER");
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(NotificationService.ACTION_NEW_FINGERPRINT);
+        filter.addAction(NotificationService.ACTION_INCOMING_MSG);
         registerReceiver(nReceiver, filter);
 
         String fromJID = "";
@@ -74,6 +78,7 @@ public class MainActivity extends AppCompatActivity {
 
         String gotifyUrl = "";
         String appToken = "";
+        String sslFingerprint = "";
 
         if (mPreferences.contains("gotifyUrl")) {
             gotifyUrl = mPreferences.getString("gotifyUrl", gotifyUrl);
@@ -91,12 +96,16 @@ public class MainActivity extends AppCompatActivity {
         if (mPreferences.contains("pass")) {
             pass = mPreferences.getString("pass", pass);
         }
+        if (mPreferences.contains("sslFingerprint")) {
+            sslFingerprint = mPreferences.getString("sslFingerprint", sslFingerprint);
+        }
         fromJIDedit.setText(fromJID);
         toJIDedit.setText(toJID);
         passEdit.setText(pass);
 
         gotifyEdit.setText(gotifyUrl);
         gotifyAppToken.setText(appToken);
+        gotifyFingerprint.setText(sslFingerprint);
     }
 
     @Override
@@ -109,12 +118,14 @@ public class MainActivity extends AppCompatActivity {
         String pass = passEdit.getText().toString();
         String gotifyUrl = gotifyEdit.getText().toString();
         String appToken = gotifyAppToken.getText().toString();
+        String sslFingerprint = gotifyFingerprint.getText().toString().trim();
 
         mPreferences.edit().putString("fromJID", fromJID).apply();
         mPreferences.edit().putString("toJID", toJID).apply();
         mPreferences.edit().putString("pass", pass).apply();
         mPreferences.edit().putString("gotifyUrl", gotifyUrl).apply();
         mPreferences.edit().putString("appToken", appToken).apply();
+        mPreferences.edit().putString("sslFingerprint", sslFingerprint).apply();
     }
 
     @Override
@@ -128,11 +139,13 @@ public class MainActivity extends AppCompatActivity {
         String pass = passEdit.getText().toString();
         String gotifyUrl = gotifyEdit.getText().toString();
         String appToken = gotifyAppToken.getText().toString();
+        String sslFingerprint = gotifyFingerprint.getText().toString().trim();
         mPreferences.edit().putString("fromJID", fromJID).apply();
         mPreferences.edit().putString("toJID", toJID).apply();
         mPreferences.edit().putString("pass", pass).apply();
         mPreferences.edit().putString("gotifyUrl", gotifyUrl).apply();
         mPreferences.edit().putString("appToken", appToken).apply();
+        mPreferences.edit().putString("sslFingerprint", sslFingerprint).apply();
 
         NotificationManager nManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         NotificationCompat.Builder ncomp = new NotificationCompat.Builder(this);
@@ -147,8 +160,25 @@ public class MainActivity extends AppCompatActivity {
     class NotificationReceiver extends BroadcastReceiver {
         @Override
         public void onReceive(Context context, Intent intent) {
-            String temp = intent.getStringExtra("notification_event") + ": " + txtView.getText();
-            txtView.setText(temp);
+
+            if (intent.getAction().equals(NotificationService.ACTION_INCOMING_MSG)) {
+                String temp = intent.getStringExtra("notification_event") + ": " + txtView.getText();
+                txtView.setText(temp);
+
+            } else if (intent.getAction().equals(NotificationService.ACTION_NEW_FINGERPRINT)) {
+                String sslFingerprint = intent.getStringExtra("new");
+                if (gotifyFingerprint.getText().toString().trim().equals("")) {
+                    gotifyFingerprint.setText(sslFingerprint);
+                    mPreferences.edit().putString("sslFingerprint", sslFingerprint).apply();
+                    txtView.setText("SSL fingerprint stored");
+                } else {
+                    txtView.setText(
+                            "+++ NEW FINGERPRINT MAYBE BAD +++\n"
+                            + sslFingerprint + "\n\n"
+                            + "Make formular field clear to store new fingerprint."
+                    );
+                }
+            }
         }
     }
 }

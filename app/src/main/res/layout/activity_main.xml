@@ -16,7 +16,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
-        android:text="Use jabber:" />
+        android:text="@string/use_jabber" />
 
     <EditText
         android:id="@+id/fromJIDedit"
@@ -24,7 +24,7 @@
         android:layout_width="match_parent"
         android:layout_below="@id/hintJabber"
         android:ems="10"
-        android:hint="my@jabber.id"
+        android:hint="@string/my_jabber_id"
         android:textColor="@android:color/black"
         android:background="@android:color/holo_orange_light"
         android:inputType="textPersonName" />
@@ -37,7 +37,7 @@
         android:layout_alignParentEnd="true"
         android:layout_below="@+id/fromJIDedit"
         android:ems="10"
-        android:hint="my-j4bber-password"
+        android:hint="@string/my_j4bber_password"
         android:inputType="textVisiblePassword"
         android:background="@android:color/holo_orange_light"
         android:textColor="@android:color/darker_gray" />
@@ -50,54 +50,13 @@
         android:layout_alignParentEnd="true"
         android:layout_below="@+id/passEdit"
         android:ems="10"
-        android:hint="send-to@jabber.id" />
+        android:hint="@string/send_to_jabber_id" />
 
-    <TextView
-        android:id="@+id/hintGotify"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/toJIDedit"
-        android:paddingTop="@dimen/activity_vertical_margin"
-        android:text="or a Gotify server:" />
-
-    <EditText
-        android:id="@+id/gotifyEdit"
-        android:layout_height="wrap_content"
-        android:layout_width="match_parent"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentEnd="true"
-        android:layout_below="@+id/hintGotify"
-        android:ems="10"
-        android:hint="http(s)://your-gotify-server:port" />
-
-    <EditText
-        android:id="@+id/gotifyAppToken"
-        android:layout_height="wrap_content"
-        android:layout_width="match_parent"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentEnd="true"
-        android:layout_below="@+id/gotifyEdit"
-        android:ems="10"
-        android:hint="a.Got1fy.App.T0ken" />
-
-    <Button
-        android:focusable="true"
-        android:focusableInTouchMode="true"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="store it now \nand\n init a test notification"
-        android:id="@+id/btnCreateNotify"
-        android:onClick="buttonClicked"
-        android:layout_below="@+id/gotifyAppToken"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentEnd="true" >
-        <requestFocus />
-    </Button>
 
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@+id/btnCreateNotify"
+        android:layout_below="@+id/toJIDedit"
         android:layout_alignParentStart="true"
         android:layout_marginTop="12dp">
 
@@ -105,6 +64,46 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical" >
+
+            <TextView
+                android:id="@+id/hintGotify"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingTop="@dimen/activity_vertical_margin"
+                android:text="@string/or_a_gotify_server" />
+
+            <EditText
+                android:id="@+id/gotifyEdit"
+                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:ems="10"
+                android:hint="@string/gotify_server_hint" />
+
+            <EditText
+                android:id="@+id/gotifyAppToken"
+                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:ems="10"
+                android:hint="@string/gotify_app_token_hint" />
+
+            <EditText
+                android:id="@+id/gotifyFingerprint"
+                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:ems="10"
+                android:textSize="8dp"
+                android:hint="@string/fingerprint_hint" />
+
+            <Button
+                android:focusable="true"
+                android:focusableInTouchMode="true"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/storebtn_hint"
+                android:id="@+id/btnCreateNotify"
+                android:onClick="buttonClicked">
+                <requestFocus />
+            </Button>
 
             <TextView
                 android:layout_width="match_parent"

@@ -4,4 +4,13 @@
     <string name="sorry">Sorry, but \'%s\' needs really access to
         your notifications. You have to add these access in
         your phone preferences!</string>
+    <string name="use_jabber">Use jabber:</string>
+    <string name="my_jabber_id">my@jabber.id</string>
+    <string name="my_j4bber_password">my-j4bber-password</string>
+    <string name="send_to_jabber_id">send-to@jabber.id</string>
+    <string name="or_a_gotify_server">or a Gotify server:</string>
+    <string name="gotify_server_hint">http(s)://your-gotify-server:port</string>
+    <string name="gotify_app_token_hint">a.Got1fy.App.T0ken</string>
+    <string name="fingerprint_hint">SSL certificate fingerprint</string>
+    <string name="storebtn_hint">store it now  and init a test notification</string>
 </resources>

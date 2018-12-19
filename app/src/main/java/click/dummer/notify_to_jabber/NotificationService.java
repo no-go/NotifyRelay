@@ -1,11 +1,12 @@
 package click.dummer.notify_to_jabber;
 
 import android.app.Notification;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.graphics.drawable.Drawable;
-import android.net.SSLCertificateSocketFactory;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
@@ -28,31 +29,20 @@ import retrofit2.http.Body;
 import retrofit2.http.POST;
 import retrofit2.http.Query;
 
-import java.net.HttpURLConnection;
+import java.io.IOException;
 import java.net.URL;
-import java.security.KeyStore;
-import java.security.cert.Certificate;
-import java.security.cert.X509Certificate;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
-import javax.net.ssl.SSLSocketFactory;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.TrustManagerFactory;
-import javax.net.ssl.X509TrustManager;
-
 public class NotificationService extends NotificationListenerService {
     public static final String DATETIME_FORMAT = "dd.MM. HH:mm";
-    private String TAG = this.getClass().getSimpleName();
-    private SharedPreferences mPreferences;
+    public static final String ACTION_INCOMING_MSG = "click.dummer.notify_to_jabber.INCOMING_MSG";
+    public static final String ACTION_NEW_FINGERPRINT = "click.dummer.notify_to_jabber.NEW_FINGERPRINT";
+    private static String TAG = "NotificationService";
+    private static SharedPreferences mPreferences;
 
     private String lastPost = "";
-
 
     public static class GotifyMessage {
         public final int priority;
@@ -96,7 +86,6 @@ public class NotificationService extends NotificationListenerService {
     @Override
     public void onNotificationPosted(StatusBarNotification sbn) {
         SimpleDateFormat formatOut = new SimpleDateFormat(DATETIME_FORMAT, Locale.ENGLISH);
-        Intent i = new Intent("click.dummer.notify_to_jabber.NOTIFICATION_LISTENER");
         mPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
         Notification noti = sbn.getNotification();
@@ -107,6 +96,7 @@ public class NotificationService extends NotificationListenerService {
         Object obj = extras.get(Notification.EXTRA_TEXT);
         String msg2 = null;
         Drawable icon = null;
+
         if (obj != null) {
             msg2 = obj.toString();
         }
@@ -158,18 +148,123 @@ public class NotificationService extends NotificationListenerService {
 
         lastPost  = msg;
 
-        sendNetBroadcast(title, msg, pack, formatOut.format(new Date()), icon);
+        //sendNetBroadcast(title, msg, pack, formatOut.format(new Date()), icon);
+        Intent i = new Intent(ACTION_INCOMING_MSG);
         i.putExtra("notification_event", msg);
         sendBroadcast(i);
+        new SendJabberTask().execute(title, msg, pack, formatOut.format(new Date()));
+        sendGotify(title, msg, pack, formatOut.format(new Date()));
     }
 
-    public void sendNetBroadcast(String title, String message, String pack, String time, Drawable icon) {
+    private void sendGotify(String... strings) {
 
         // Hack - should be done using an async task !!
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
 
-        try {
+
+        String title = strings[0];
+        String message = strings[1];
+        String pack = strings[2];
+        String time = strings[3];
+
+        String gotifyUrl = "";
+        String appToken = "";
+        String sslFingerprint = "";
+
+        if (mPreferences.contains("gotifyUrl")) {
+            gotifyUrl = mPreferences.getString("gotifyUrl", gotifyUrl);
+        }
+        if (mPreferences.contains("appToken")) {
+            appToken = mPreferences.getString("appToken", appToken);
+        }
+        if (mPreferences.contains("sslFingerprint")) {
+            sslFingerprint = mPreferences.getString("sslFingerprint", sslFingerprint);
+        }
+
+        if (!gotifyUrl.equals("") && !appToken.equals("")) {
+            Retrofit retrofit = null;
+            try {
+                URL destinationURL = new URL(gotifyUrl);
+                SslHelper.Basics basics = SslHelper.CertCheck(destinationURL);
+
+                if (basics.isHttps) {
+                    if (basics.domain == null) {
+                        Log.w(TAG, "gotify server cert: domain verify failed");
+                        return;
+                    }
+                    if (basics.certificate == null) {
+                        Log.w(TAG, "gotify server cert: no X509Certificate found");
+                        // not a SSL certificate (and not self signed)
+                        retrofit = new Retrofit.Builder()
+                                .baseUrl(gotifyUrl)
+                                .addConverterFactory(GsonConverterFactory.create())
+                                .build();
+                    } else {
+
+                        if (sslFingerprint.equals("")) {
+                            Log.w(TAG, "gotify server cert: add fingerprint");
+                            Intent i = new Intent(ACTION_NEW_FINGERPRINT);
+                            i.putExtra("new", basics.fingerprint);
+                            getBaseContext().sendBroadcast(i);
+                        } else {
+                            if (!sslFingerprint.equals(basics.fingerprint)) {
+                                Log.w(TAG, "gotify server cert: fingerprint changed");
+                                Intent i = new Intent(ACTION_NEW_FINGERPRINT);
+                                i.putExtra("old", sslFingerprint);
+                                i.putExtra("new", basics.fingerprint);
+                                getBaseContext().sendBroadcast(i);
+                                return;
+                            }
+                        }
+
+                        OkHttpClient client = SslHelper.createOkClient(destinationURL, basics.certificate);
+                        if (client == null) {
+                            Log.w(TAG, "gotify server: building OK-Client with SSL cert failed");
+                            return;
+                        }
+
+                        retrofit = new Retrofit.Builder()
+                                .baseUrl(gotifyUrl)
+                                .client(client) // ssl handling add on
+                                .addConverterFactory(GsonConverterFactory.create())
+                                .build();
+                    }
+
+                } else {
+                    retrofit = new Retrofit.Builder()
+                            .baseUrl(gotifyUrl)
+                            .addConverterFactory(GsonConverterFactory.create())
+                            .build();
+                }
+                GotifyMessageService gms = retrofit.create(GotifyMessageService.class);
+
+                GotifyMessage gotifyMessage = new GotifyMessage(
+                        4,
+                        pack,
+                        title + ": " + message
+                );
+
+                Call<GotifyMessage> call = gms.createMessage(appToken, gotifyMessage);
+                call.execute();
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        }
+    }
+
+
+    private static class SendJabberTask extends AsyncTask<String, Void, Void> {
+
+        @Override
+        protected Void doInBackground(String... strings) {
+            String title = strings[0];
+            String message = strings[1];
+            String pack = strings[2];
+            String time = strings[3];
+
             String fromJID = "";
             String toJID = "";
             String pass = "";
@@ -183,141 +278,26 @@ public class NotificationService extends NotificationListenerService {
                 pass = mPreferences.getString("pass", pass);
             }
 
-            // --------------------------------------------------------------------jabber ---------
             AbstractXMPPConnection connection = new XMPPTCPConnection(
                     fromJID.substring(0, fromJID.lastIndexOf("@")),
                     pass,
                     fromJID.substring(fromJID.lastIndexOf("@")+1)
             );
-
-            if (!connection.isConnected()) {
-                connection.connect().login();
-            }
-
-            if (connection.isConnected()) {
-                ChatManager chatManager = ChatManager.getInstanceFor(connection);
-                Chat chat = chatManager.createChat(toJID);
-                chat.sendMessage("["+pack+"] " + time + "\n" + title + ": " + message);
-                //connection.disconnect();
-            }
-
-            // --------------------------------------------------------------------gotify ---------
-
-            String gotifyUrl = "";
-            String appToken = "";
-
-            if (mPreferences.contains("gotifyUrl")) {
-                gotifyUrl = mPreferences.getString("gotifyUrl", gotifyUrl);
-            }
-            if (mPreferences.contains("appToken")) {
-                appToken = mPreferences.getString("appToken", appToken);
-            }
-
-
-            // ---------------------------------ssl handling
-
-
-            // START get cert with ignoring all ssl errors
-
-            Certificate certificate = null;
-            URL destinationURL = new URL(gotifyUrl);
-            HttpURLConnection conn = (HttpURLConnection) destinationURL.openConnection();
-            if (conn instanceof HttpsURLConnection) {
-                HttpsURLConnection httpsConn = (HttpsURLConnection) conn;
-                httpsConn.setSSLSocketFactory(SSLCertificateSocketFactory.getInsecure(0, null));
-                httpsConn.setHostnameVerifier(new MyHostnameVerifier(destinationURL));
-            }
-            conn.connect();
-            Certificate[] certs = ( (HttpsURLConnection) conn).getServerCertificates();
-            Log.d(TAG,"nb = " + certs.length);
-            for (Certificate cert : certs) {
-                Log.d(TAG, cert.toString());
-                if (cert instanceof X509Certificate) {
-                    certificate = cert;
-                    break;
+            try {
+                if (!connection.isConnected()) {
+                    connection.connect().login();
                 }
+
+                if (connection.isConnected()) {
+                    ChatManager chatManager = ChatManager.getInstanceFor(connection);
+                    Chat chat = chatManager.createChat(toJID);
+                    chat.sendMessage("["+pack+"] " + time + "\n" + title + ": " + message);
+                    //connection.disconnect();
+                }
+            } catch (Exception e) {
+                Log.d(TAG, "Exception: " + e.getMessage());
             }
-
-            // END cert with ignoring all ssl errors: now we have to compare the signature as alternative way
-
-            if (certificate == null) return;
-            StringBuilder sb = new StringBuilder();
-            for (byte b : ((X509Certificate) certificate).getSignature()) {
-                sb.append(String.format("%02X:", b));
-            }
-            String sig = sb.toString();
-            sig = sig.substring(0, sig.length()-1);
-            Log.d(TAG, sig);
-
-
-            // @todo store signature, compare it, add it to a config or main activity
-
-            // @todo alternative way without all that stuff (not ignoring SSL fail)
-
-
-            // Create a KeyStore containing our trusted CAs
-            String keyStoreType = KeyStore.getDefaultType();
-            KeyStore keyStore = KeyStore.getInstance(keyStoreType);
-            keyStore.load(null, null);
-            keyStore.setCertificateEntry("ca", certificate);
-
-            // Create a TrustManager that trusts the CAs in our KeyStore.
-            String tmfAlgorithm = TrustManagerFactory.getDefaultAlgorithm();
-            TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(tmfAlgorithm);
-            trustManagerFactory.init(keyStore);
-
-            TrustManager[] trustManagers = trustManagerFactory.getTrustManagers();
-            X509TrustManager x509TrustManager = (X509TrustManager) trustManagers[0];
-
-
-            // Create an SSLSocketFactory that uses our TrustManager
-            SSLContext sslContext = SSLContext.getInstance("SSL");
-            sslContext.init(null, new TrustManager[]{x509TrustManager}, null);
-            SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
-
-            //create Okhttp client
-            OkHttpClient client = new OkHttpClient.Builder()
-                    .sslSocketFactory(sslSocketFactory,x509TrustManager)
-                    .hostnameVerifier(new MyHostnameVerifier(destinationURL))
-                    .build();
-
-
-
-
-            if (!gotifyUrl.equals("") && !appToken.equals("")) {
-                Retrofit retrofit = new Retrofit.Builder()
-                        .baseUrl(gotifyUrl)
-                        .client(client) // ssl handling add on
-                        .addConverterFactory(GsonConverterFactory.create())
-                        .build();
-
-                GotifyMessageService gms = retrofit.create(GotifyMessageService.class);
-
-                GotifyMessage gotifyMessage = new GotifyMessage(
-                        4,
-                        pack,
-                        title + ": " + message
-                );
-
-                Call<GotifyMessage> call = gms.createMessage(appToken, gotifyMessage);
-                call.execute();
-            }
-
-        } catch (Exception e) {
-            Log.e(TAG, "Exception: " + e.getMessage());
-        }
-    }
-
-    private class MyHostnameVerifier implements HostnameVerifier {
-        private URL shouldHost;
-
-        public MyHostnameVerifier(URL shouldHost) {
-            this.shouldHost = shouldHost;
-        }
-
-        @Override
-        public boolean verify(String hostname, SSLSession sslSession) {
-            return shouldHost.getHost().equals(hostname);
+            return null;
         }
     }
 }

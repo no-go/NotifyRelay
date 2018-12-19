@@ -14,6 +14,10 @@ uses [smack](https://github.com/igniterealtime/Smack/) lib for this.
 Alternative: use your [gotify server](https://github.com/gotify/server) and an application token to
 submit the notifications. It uses the [Retrofit](https://github.com/square/retrofit) lib for the REST request.
 
+## Gotify with self signed cert
+
+If a X509Certificate is detected, domain is checked and fingerprint is store.
+Additional access will compare these fingerprint.
 
 ## Get the App
 
