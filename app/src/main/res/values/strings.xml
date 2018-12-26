@@ -13,4 +13,6 @@
     <string name="gotify_app_token_hint">a.Got1fy.App.T0ken</string>
     <string name="fingerprint_hint">SSL certificate fingerprint</string>
     <string name="storebtn_hint">store it now  and init a test notification</string>
+    <string name="fingerprint_stored">new SSL fingerprint stored</string>
+    <string name="fingerprint_may_bad">+++ NEW FINGERPRINT MAYBE BAD +++\n%s\n\nMake formular field clear to store new fingerprint.</string>
 </resources>

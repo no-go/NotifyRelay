@@ -170,13 +170,9 @@ public class MainActivity extends AppCompatActivity {
                 if (gotifyFingerprint.getText().toString().trim().equals("")) {
                     gotifyFingerprint.setText(sslFingerprint);
                     mPreferences.edit().putString("sslFingerprint", sslFingerprint).apply();
-                    txtView.setText("SSL fingerprint stored");
+                    txtView.setText(R.string.fingerprint_stored);
                 } else {
-                    txtView.setText(
-                            "+++ NEW FINGERPRINT MAYBE BAD +++\n"
-                            + sslFingerprint + "\n\n"
-                            + "Make formular field clear to store new fingerprint."
-                    );
+                    txtView.setText(getString(R.string.fingerprint_may_bad, sslFingerprint));
                 }
             }
         }

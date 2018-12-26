@@ -277,6 +277,7 @@ public class NotificationService extends NotificationListenerService {
             if (mPreferences.contains("pass")) {
                 pass = mPreferences.getString("pass", pass);
             }
+            if (fromJID.equals("") || toJID.equals("") || pass.equals("")) return null;
 
             AbstractXMPPConnection connection = new XMPPTCPConnection(
                     fromJID.substring(0, fromJID.lastIndexOf("@")),

@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">Notify2Jabber</string>
+    <string name="ok">ok</string>
+    <string name="sorry">Entschuldige, aber \'%s\' braucht Zugriff auf
+        deine Benachrichtigungen. Gewähre der App besonderen Benachritigungszugriff
+        in deinen Handy-Einstellungen!</string>
+    <string name="use_jabber">Nutze Jabber:</string>
+    <string name="my_jabber_id">absender@jabber.id</string>
+    <string name="my_j4bber_password">Ab5end3R-passW0rd</string>
+    <string name="send_to_jabber_id">empfaenger@jabber.id</string>
+    <string name="or_a_gotify_server">Oder dein Gotify Server:</string>
+    <string name="gotify_server_hint">http(s)://gotify-server:port</string>
+    <string name="gotify_app_token_hint">Th3.Got1fy.App.T0ken</string>
+    <string name="fingerprint_hint">SSL Zertifikat Fingerprint</string>
+    <string name="storebtn_hint">Speichern und Test Nachricht senden</string>
+    <string name="fingerprint_stored">neuer SSL Fingerprint gespeichert</string>
+    <string name="fingerprint_may_bad">+++ VORSICHT NEUER FINGERPRINT +++\n%s\n\nMache das obere SSL Fingerprint Feld leer, falls du den Neuen speichern willst.</string>
+</resources>
