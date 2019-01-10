@@ -8,8 +8,8 @@ android {
         minSdkVersion 19
         // upload alias
         targetSdkVersion 22
-        versionCode 80
-        versionName "0.80"
+        versionCode 81
+        versionName "0.81"
     }
     buildTypes {
         release {
@@ -31,7 +31,6 @@ dependencies {
     implementation "org.igniterealtime.smack:smack-tcp:4.1.6"
     implementation 'com.squareup.retrofit2:retrofit:2.5.0'
     implementation 'com.squareup.retrofit2:converter-gson:2.5.0'
-    // implementation 'org.apache.httpcomponents:httpclient-android:4.3.5.1'
 }
 
 configurations {

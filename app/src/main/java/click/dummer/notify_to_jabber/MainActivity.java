@@ -15,6 +15,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import java.util.Set;
@@ -28,6 +29,8 @@ public class MainActivity extends AppCompatActivity {
     private EditText gotifyEdit;
     private EditText gotifyAppToken;
     private EditText gotifyFingerprint;
+
+    private ScrollView scrollView;
 
     private NotificationReceiver nReceiver;
     private SharedPreferences mPreferences;
@@ -47,6 +50,13 @@ public class MainActivity extends AppCompatActivity {
         gotifyFingerprint = (EditText) findViewById(R.id.gotifyFingerprint);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
         getSupportActionBar().setIcon(R.mipmap.ic_launcher);
+        scrollView = (ScrollView) findViewById(R.id.primaryContent);
+        scrollView.post(new Runnable() {
+            @Override
+            public void run() {
+                scrollView.fullScroll(ScrollView.FOCUS_UP);
+            }
+        });
     }
 
     @Override
@@ -60,7 +70,8 @@ public class MainActivity extends AppCompatActivity {
             alertDialogBuilder.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialogInterface, int i) {
-                    finish();
+                    Intent intent = new Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS");
+                    startActivity(intent);
                 }
             });
             alertDialogBuilder.setMessage(getString(R.string.sorry, getString(R.string.app_name)));
@@ -149,9 +160,9 @@ public class MainActivity extends AppCompatActivity {
 
         NotificationManager nManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         NotificationCompat.Builder ncomp = new NotificationCompat.Builder(this);
-        ncomp.setContentTitle("Title");
-        ncomp.setContentText("I am the Text from " + getString(R.string.app_name));
-        ncomp.setTicker("I am the Ticker");
+        ncomp.setContentTitle("Test Title");
+        ncomp.setContentText("I am a test message.");
+        ncomp.setTicker("I am a test ticker");
         ncomp.setSmallIcon(R.mipmap.ic_launcher);
         ncomp.setAutoCancel(true);
         nManager.notify((int)System.currentTimeMillis(), ncomp.build());

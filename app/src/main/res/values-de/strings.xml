@@ -15,4 +15,5 @@
     <string name="storebtn_hint">Speichern und Test Nachricht senden</string>
     <string name="fingerprint_stored">neuer SSL Fingerprint gespeichert</string>
     <string name="fingerprint_may_bad">+++ VORSICHT NEUER FINGERPRINT +++\n%s\n\nMache das obere SSL Fingerprint Feld leer, falls du den Neuen speichern willst.</string>
+    <string name="loop_warning">Vorsicht! Das Erstellen einer Weiterleitung darf nicht zu einer Schleife führen! Die Benachrichtigungen auf ein Jabber Account zu senden, für das auf diesem Handy ein Client eingerichtet ist, kann zu endlos vielen neuen Benachrichtigungen führen! In dem Fall kann man z.B. das Handy ausschalten, die SIM-Karte entfernen oder den Flugmodus wählen, um die App neu zu konfigurieren.</string>
 </resources>

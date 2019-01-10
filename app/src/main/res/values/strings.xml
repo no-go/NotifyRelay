@@ -15,4 +15,5 @@
     <string name="storebtn_hint">store it now  and init a test notification</string>
     <string name="fingerprint_stored">new SSL fingerprint stored</string>
     <string name="fingerprint_may_bad">+++ NEW FINGERPRINT MAYBE BAD +++\n%s\n\nMake formular field clear to store new fingerprint.</string>
+    <string name="loop_warning">Caution! The creation of a forwarding should not lead to a loop! Sending notifications to a Jabber account that has a client set up on this phone can lead to endless new notifications! In this case you can e.g. switch off the mobile phone, remove the SIM card or select the flight mode to reconfigure the app.</string>
 </resources>
