@@ -1,0 +1,1 @@
+Leitet Handy Nachrichten weiter an Jabber oder einen Gotify Server
