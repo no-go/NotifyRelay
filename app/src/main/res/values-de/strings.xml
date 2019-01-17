@@ -2,7 +2,7 @@
     <string name="app_name">Notify2Jabber</string>
     <string name="ok">ok</string>
     <string name="sorry">Entschuldige, aber \'%s\' braucht Zugriff auf
-        deine Benachrichtigungen. Gewähre der App besonderen Benachritigungszugriff
+        deine Benachrichtigungen. Gewähre der App besonderen Benachrichtigungszugriff
         in deinen Handy-Einstellungen!</string>
     <string name="use_jabber">Nutze Jabber:</string>
     <string name="my_jabber_id">absender@jabber.id</string>
@@ -16,4 +16,22 @@
     <string name="fingerprint_stored">neuer SSL Fingerprint gespeichert</string>
     <string name="fingerprint_may_bad">+++ VORSICHT NEUER FINGERPRINT +++\n%s\n\nMache das obere SSL Fingerprint Feld leer, falls du den Neuen speichern willst.</string>
     <string name="loop_warning">Vorsicht! Das Erstellen einer Weiterleitung darf nicht zu einer Schleife führen! Die Benachrichtigungen auf ein Jabber Account zu senden, für das auf diesem Handy ein Client eingerichtet ist, kann zu endlos vielen neuen Benachrichtigungen führen! In dem Fall kann man z.B. das Handy ausschalten, die SIM-Karte entfernen oder den Flugmodus wählen, um die App neu zu konfigurieren.</string>
+
+    <string name="opt_sourcename">mit App Name</string>
+    <string name="opt_time">mit Zeit</string>
+    <string name="opt_time1">dd.MM. HH:mm:ss</string>
+    <string name="opt_time2">dd.MM. HH:mm</string>
+    <string name="opt_time3">HH:mm</string>
+    <string name="opt_time4">timestamp</string>
+    <string name="opt_blacklist">Blacklist</string>
+
+    <string name="settings">SMS Einstellungen</string>
+    <string name="opt_sms">SMS Weiterleitung</string>
+
+    <string name="sms_hint">Alle Benachrichtigungen lassen sich auch via SMS an ein anderes Handy senden. Auch hier gilt: KEINE NACHRICHTEN SCHLEIFEN BILDEN! Es sollte sich um ein anderes Gerät handeln!</string>
+    <string name="sms_maxparts">SMS Länge</string>
+    <string name="sms_maxparts_hint">In wie viele (Teil-)SMS darf eine Benachrichtigung versendet werden?\n\n0 = unbegrenzt</string>
+    <string name="sms_daily">Tageslimit</string>
+    <string name="sms_daily_hint">Wie viele (Teil-)SMS dürfen am Tag versendet werden?\n\n0 = unbegrenzt</string>
+    <string name="sms_nr">Empfängernummer</string>
 </resources>

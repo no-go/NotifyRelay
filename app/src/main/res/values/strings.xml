@@ -16,4 +16,23 @@
     <string name="fingerprint_stored">new SSL fingerprint stored</string>
     <string name="fingerprint_may_bad">+++ NEW FINGERPRINT MAYBE BAD +++\n%s\n\nMake formular field clear to store new fingerprint.</string>
     <string name="loop_warning">Caution! The creation of a forwarding should not lead to a loop! Sending notifications to a Jabber account that has a client set up on this phone can lead to endless new notifications! In this case you can e.g. switch off the mobile phone, remove the SIM card or select the flight mode to reconfigure the app.</string>
+
+    <string name="opt_sourcename">add app name</string>
+    <string name="opt_time">add time</string>
+    <string name="opt_time1">dd.MM. HH:mm:ss</string>
+    <string name="opt_time2">dd.MM. HH:mm</string>
+    <string name="opt_time3">HH:mm</string>
+    <string name="opt_time4">timestamp</string>
+    <string name="opt_blacklist">blacklist</string>
+
+    <string name="settings">sms settings</string>
+    <string name="opt_sms">forwarding via sms</string>
+
+    <string name="sms_hint">Notifications could be sent to another phone via sms. Attention! DO NOT BUILD LOOPS! It should really be another phone!</string>
+    <string name="sms_maxparts">sms length</string>
+    <string name="sms_maxparts_hint">How many (multipart) sms should a notification use?\n\n0 = unlimited</string>
+    <string name="sms_daily">day limit</string>
+    <string name="sms_daily_hint">How many (multipart) sms should be send a day?\n\n0 = unlimited</string>
+    <string name="sms_nr">send to phone number...</string>
+
 </resources>

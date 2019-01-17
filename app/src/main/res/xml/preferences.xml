@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <CheckBoxPreference
+        android:key="sms_forward"
+        android:defaultValue="false"
+        android:title="@string/opt_sms"
+        android:summary="@string/sms_hint" />
+
+    <click.dummer.notify_to_jabber.IntEditPreference
+        android:key="maxparts"
+        android:title="@string/sms_maxparts"
+        android:summary="@string/sms_maxparts_hint"
+        android:numeric="integer"
+        android:defaultValue="1"
+        android:maxLength="2" />
+
+    <click.dummer.notify_to_jabber.IntEditPreference
+        android:key="maxday"
+        android:title="@string/sms_daily"
+        android:summary="@string/sms_daily_hint"
+        android:numeric="integer"
+        android:defaultValue="1"
+        android:maxLength="3" />
+
+    <EditTextPreference
+        android:key="phone"
+        android:inputType="phone"
+        android:title="@string/sms_nr" />
+
+</PreferenceScreen>
