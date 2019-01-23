@@ -23,6 +23,11 @@ Additional access will compare these fingerprint.
 
 You can get a signed APK (4.4.4+) from [here](https://raw.githubusercontent.com/no-go/NotifyRelay/master/app/release/click.dummer.notify_to_jabber.apk)
 
+Alternative:
+
+<a href="https://f-droid.org/packages/click.dummer.notify_to_jabber/" target="_blank">
+<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png" alt="Get it on F-Droid" height="80"/></a>
+
 ## My App License
 
     This is free and unencumbered software released into the public domain.
