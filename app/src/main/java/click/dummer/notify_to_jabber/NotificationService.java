@@ -36,7 +36,7 @@ import java.util.Date;
 import java.util.Locale;
 
 public class NotificationService extends NotificationListenerService {
-    public static final String DATETIME_FORMAT = "dd.MM. HH:mm";
+    //public static final String DATETIME_FORMAT = "dd.MM. HH:mm";
     public static final String ACTION_INCOMING_MSG = "click.dummer.notify_to_jabber.INCOMING_MSG";
     public static final String ACTION_NEW_FINGERPRINT = "click.dummer.notify_to_jabber.NEW_FINGERPRINT";
     private static String TAG = "NotificationService";
@@ -85,7 +85,7 @@ public class NotificationService extends NotificationListenerService {
 
     @Override
     public void onNotificationPosted(StatusBarNotification sbn) {
-        SimpleDateFormat formatOut = new SimpleDateFormat(DATETIME_FORMAT, Locale.ENGLISH);
+        SimpleDateFormat formatOut;
         mPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
         Notification noti = sbn.getNotification();
@@ -152,8 +152,28 @@ public class NotificationService extends NotificationListenerService {
         Intent i = new Intent(ACTION_INCOMING_MSG);
         i.putExtra("notification_event", msg);
         sendBroadcast(i);
-        new SendJabberTask().execute(title, msg, pack, formatOut.format(new Date()));
-        sendGotify(title, msg, pack, formatOut.format(new Date()));
+        String time = "";
+        switch (mPreferences.getInt("with_time", 0)) {
+            case 1:
+                formatOut = new SimpleDateFormat("dd.MM. HH:mm:ss", Locale.ENGLISH);
+                time = formatOut.format(new Date());
+                break;
+            case 2:
+                formatOut = new SimpleDateFormat("dd.MM. HH:mm", Locale.ENGLISH);
+                time = formatOut.format(new Date());
+                break;
+            case 3:
+                formatOut = new SimpleDateFormat("HH:mm", Locale.ENGLISH);
+                time = formatOut.format(new Date());
+                break;
+            case 4:
+                time = Long.toString(new Date().getTime());
+                break;
+            default:
+        }
+        if (mPreferences.getBoolean("with_source", true) == false) pack = "";
+        new SendJabberTask().execute(title, msg, pack, time);
+        sendGotify(title, msg, pack, time);
     }
 
     private void sendGotify(String... strings) {
@@ -238,12 +258,20 @@ public class NotificationService extends NotificationListenerService {
                             .build();
                 }
                 GotifyMessageService gms = retrofit.create(GotifyMessageService.class);
-
-                GotifyMessage gotifyMessage = new GotifyMessage(
-                        4,
-                        pack,
-                        title + ": " + message
-                );
+                GotifyMessage gotifyMessage;
+                if (pack.equals("")) {
+                    gotifyMessage = new GotifyMessage(
+                            4,
+                            title,
+                            message
+                    );
+                } else {
+                    gotifyMessage = new GotifyMessage(
+                            4,
+                            pack,
+                            title + ": " + message
+                    );
+                }
 
                 Call<GotifyMessage> call = gms.createMessage(appToken, gotifyMessage);
                 call.execute();
@@ -292,7 +320,12 @@ public class NotificationService extends NotificationListenerService {
                 if (connection.isConnected()) {
                     ChatManager chatManager = ChatManager.getInstanceFor(connection);
                     Chat chat = chatManager.createChat(toJID);
-                    chat.sendMessage("["+pack+"] " + time + "\n" + title + ": " + message);
+                    if (!time.equals("")) time = time + "\n";
+                    if (pack.equals("")) {
+                        chat.sendMessage(time + title + ": " + message);
+                    } else {
+                        chat.sendMessage("["+pack+"] " + time + title + ": " + message);
+                    }
                     //connection.disconnect();
                 }
             } catch (Exception e) {

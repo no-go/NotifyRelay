@@ -37,6 +37,8 @@ public class MainActivity extends AppCompatActivity {
     private NotificationReceiver nReceiver;
     private SharedPreferences mPreferences;
 
+    private Menu optionsmenu;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -144,7 +146,41 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.options, menu);
+        optionsmenu = menu;
         return true;
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        optionsmenu.findItem(R.id.action_sourcename).setChecked(mPreferences.getBoolean("with_source", true));
+
+        int timetype = mPreferences.getInt("with_time", 0);
+        switch (timetype) {
+            case 1:
+                optionsmenu.findItem(R.id.action_time).setChecked(true);
+                optionsmenu.findItem(R.id.action_time1).setChecked(true);
+                optionsmenu.setGroupEnabled(R.id.timeoptions, true);
+                break;
+            case 2:
+                optionsmenu.findItem(R.id.action_time).setChecked(true);
+                optionsmenu.findItem(R.id.action_time2).setChecked(true);
+                optionsmenu.setGroupEnabled(R.id.timeoptions, true);
+                break;
+            case 3:
+                optionsmenu.findItem(R.id.action_time).setChecked(true);
+                optionsmenu.findItem(R.id.action_time3).setChecked(true);
+                optionsmenu.setGroupEnabled(R.id.timeoptions, true);
+                break;
+            case 4:
+                optionsmenu.findItem(R.id.action_time).setChecked(true);
+                optionsmenu.findItem(R.id.action_time4).setChecked(true);
+                optionsmenu.setGroupEnabled(R.id.timeoptions, true);
+                break;
+            default:
+                optionsmenu.findItem(R.id.action_time).setChecked(false);
+                optionsmenu.setGroupEnabled(R.id.timeoptions, false);
+        }
+        return super.onPrepareOptionsMenu(menu);
     }
 
     @Override
@@ -155,6 +191,49 @@ public class MainActivity extends AppCompatActivity {
             Intent intentsmspref = new Intent(MainActivity.this, PreferencesActivity.class);
             startActivity(intentsmspref);
             return true;
+        } else if (id == R.id.action_sourcename) {
+            if (item.isChecked()) {
+                item.setChecked(false);
+                mPreferences.edit().putBoolean("with_source", false).apply();
+            } else {
+                item.setChecked(true);
+                mPreferences.edit().putBoolean("with_source", true).apply();
+            }
+        } else if (id == R.id.action_time) {
+            if (item.isChecked()) {
+                item.setChecked(false);
+                optionsmenu.setGroupEnabled(R.id.timeoptions, false);
+                mPreferences.edit().putInt("with_time", 0).apply();
+            } else {
+                item.setChecked(true);
+                optionsmenu.setGroupEnabled(R.id.timeoptions, true);
+                int timetype = 0;
+                if (optionsmenu.findItem(R.id.action_time1).isChecked()) timetype=1;
+                if (optionsmenu.findItem(R.id.action_time2).isChecked()) timetype=2;
+                if (optionsmenu.findItem(R.id.action_time3).isChecked()) timetype=3;
+                if (optionsmenu.findItem(R.id.action_time4).isChecked()) timetype=4;
+                mPreferences.edit().putInt("with_time", timetype).apply();
+            }
+        } else if (id == R.id.action_time1) {
+            if (item.isChecked() == false) {
+                item.setChecked(true);
+                mPreferences.edit().putInt("with_time", 1).apply();
+            }
+        } else if (id == R.id.action_time2) {
+            if (item.isChecked() == false) {
+                item.setChecked(true);
+                mPreferences.edit().putInt("with_time", 2).apply();
+            }
+        } else if (id == R.id.action_time3) {
+            if (item.isChecked() == false) {
+                item.setChecked(true);
+                mPreferences.edit().putInt("with_time", 3).apply();
+            }
+        } else if (id == R.id.action_time4) {
+            if (item.isChecked() == false) {
+                item.setChecked(true);
+                mPreferences.edit().putInt("with_time", 4).apply();
+            }
         }
         return super.onOptionsItemSelected(item);
     }

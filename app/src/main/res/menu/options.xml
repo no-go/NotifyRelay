@@ -14,7 +14,10 @@
             app:showAsAction="never" />
     </group>
 
-    <group android:checkableBehavior="single" android:enabled="false">
+    <group
+        android:id="@+id/timeoptions"
+        android:checkableBehavior="single"
+        android:enabled="false">
         <item
             android:id="@+id/action_time1"
             android:checked="false"
@@ -40,10 +43,12 @@
     <item
         android:id="@+id/action_blacklist"
         android:title="@string/opt_blacklist"
+        android:visible="false"
         app:showAsAction="never" />
 
     <item
         android:id="@+id/action_sms"
         android:title="@string/settings"
+        android:visible="false"
         app:showAsAction="never" />
 </menu>
