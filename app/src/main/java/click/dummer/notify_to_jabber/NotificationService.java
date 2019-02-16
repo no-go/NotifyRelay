@@ -1,6 +1,7 @@
 package click.dummer.notify_to_jabber;
 
 import android.app.Notification;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -13,6 +14,7 @@ import android.os.StrictMode;
 import android.preference.PreferenceManager;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
+import android.telephony.SmsManager;
 import android.text.SpannableString;
 import android.util.Log;
 
@@ -32,6 +34,7 @@ import retrofit2.http.Query;
 import java.io.IOException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 
@@ -41,6 +44,12 @@ public class NotificationService extends NotificationListenerService {
     public static final String ACTION_NEW_FINGERPRINT = "click.dummer.notify_to_jabber.NEW_FINGERPRINT";
     private static String TAG = "NotificationService";
     private static SharedPreferences mPreferences;
+
+    private SmsManager smsManager = SmsManager.getDefault();
+    private ArrayList<String> parts;
+    private String phone;
+    private ArrayList<PendingIntent> sentPIs;
+    private ArrayList<PendingIntent> deliveredPIs;
 
     private String lastPost = "";
 
@@ -148,6 +157,11 @@ public class NotificationService extends NotificationListenerService {
 
         lastPost  = msg;
 
+        title = title.trim();
+        if (title.endsWith(":")) {
+            title = title.substring(0, title.lastIndexOf(":"));
+        }
+
         //sendNetBroadcast(title, msg, pack, formatOut.format(new Date()), icon);
         Intent i = new Intent(ACTION_INCOMING_MSG);
         i.putExtra("notification_event", msg);
@@ -172,8 +186,44 @@ public class NotificationService extends NotificationListenerService {
             default:
         }
         if (mPreferences.getBoolean("with_source", true) == false) pack = "";
+
+        // ++++ Jabber
         new SendJabberTask().execute(title, msg, pack, time);
+
+        // ++++ Gotify
         sendGotify(title, msg, pack, time);
+
+        // ++++ SMS
+        phone = mPreferences.getString("phone", "").trim();
+        if (mPreferences.getBoolean("sms_forward", false) && phone.equals("") == false) {
+            String SENT = "SMS_SENT";
+            String DELIVERED = "SMS_DELIVERED";
+
+            PendingIntent sentPI = PendingIntent.getBroadcast(this, 0, new Intent(SENT), 0);
+            PendingIntent deliveredPI = PendingIntent.getBroadcast(this, 0, new Intent(DELIVERED), 0);
+
+            sentPIs = new ArrayList<>();
+            deliveredPIs = new ArrayList<>();
+            sentPIs.add(sentPI);
+            deliveredPIs.add(deliveredPI);
+
+            String message = "";
+            if (!time.equals("")) time = time + "\n";
+            if (pack.equals("")) {
+                message = time + title + ": " + msg;
+            } else {
+                message = "["+pack+"] " + time + title + ": " + msg;
+            }
+
+            int limit = mPreferences.getInt("maxchars", 140);
+            if (limit>0 && message.length()>limit) {
+                message = message.substring(0, limit-1);
+            }
+            //smsManager.sendTextMessage(phone, null, message, null, null);
+            parts = smsManager.divideMessage(message);
+            smsManager.sendMultipartTextMessage(phone, null, parts, sentPIs, deliveredPIs);
+        }
+
     }
 
     private void sendGotify(String... strings) {

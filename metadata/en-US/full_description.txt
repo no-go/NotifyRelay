@@ -1,4 +1,4 @@
-Sometimes a new giant smartphone is too big for me at parties. It is nice to be able to redirect all your messages to a little old one. In an emergency you can at least answer via SMS. Jabber2Notify redirects almost everything to a <a href="https://www.jabber.org/">Jabber</a> account or to a <a href="https://github.com/gotify/server/">Gotify</a> server. The app is a little everyday hack that I do not want to keep from the FOSS community. 😉
+Sometimes a new giant smartphone is too big for me at parties. It is nice to be able to redirect all your messages to a little old one. In an emergency you can at least answer via SMS. Jabber2Notify redirects almost everything to a <a href="https://www.jabber.org/">Jabber</a> account or to a <a href="https://github.com/gotify/server/">Gotify</a> server. Forwarding with sms is possible, too. The app is a little everyday hack that I do not want to keep from the FOSS community. 😉
 
 The app sends all text notifications to a xmpp jabber account. It uses the <a href="https://github.com/igniterealtime/Smack/">Smack lib</a> (Apache 2.0 license) for this.
 

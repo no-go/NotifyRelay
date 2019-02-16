@@ -5,7 +5,7 @@
 Sometimes a new giant smartphone is too big for me at parties. It's nice to 
 be able to redirect all your messages to a little old one. In an emergency 
 you can at least answer via SMS. My app redirects almost everything to a 
-Jabber account or to a Gotify server. It's a little everyday hack that I 
+Jabber account, to your Gotify server or as sms. It's a little everyday hack that I
 don't want to keep from the FOSS community.
 
 The App sends all Android text notifications to a xmpp jabber account. It

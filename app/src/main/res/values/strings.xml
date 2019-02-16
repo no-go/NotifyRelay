@@ -30,7 +30,7 @@
 
     <string name="sms_hint">Notifications could be sent to another phone via sms. Attention! DO NOT BUILD LOOPS! It should really be another phone!</string>
     <string name="sms_maxparts">sms length</string>
-    <string name="sms_maxparts_hint">How many (multipart) sms should a notification use?\n\n0 = unlimited</string>
+    <string name="sms_maxparts_hint">After how many letters should a sms cut off?\n\n0 = no cut</string>
     <string name="sms_daily">day limit</string>
     <string name="sms_daily_hint">How many (multipart) sms should be send a day?\n\n0 = unlimited</string>
     <string name="sms_nr">send to phone number...</string>

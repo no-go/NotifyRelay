@@ -8,20 +8,20 @@
         android:summary="@string/sms_hint" />
 
     <click.dummer.notify_to_jabber.IntEditPreference
-        android:key="maxparts"
+        android:key="maxchars"
         android:title="@string/sms_maxparts"
         android:summary="@string/sms_maxparts_hint"
         android:numeric="integer"
-        android:defaultValue="1"
-        android:maxLength="2" />
+        android:defaultValue="140"
+        android:maxLength="3" />
 
-    <click.dummer.notify_to_jabber.IntEditPreference
+    <!-- click.dummer.notify_to_jabber.IntEditPreference
         android:key="maxday"
         android:title="@string/sms_daily"
         android:summary="@string/sms_daily_hint"
         android:numeric="integer"
-        android:defaultValue="1"
-        android:maxLength="3" />
+        android:defaultValue="10"
+        android:maxLength="3" / -->
 
     <EditTextPreference
         android:key="phone"

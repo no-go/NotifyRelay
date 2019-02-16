@@ -30,7 +30,7 @@
 
     <string name="sms_hint">Alle Benachrichtigungen lassen sich auch via SMS an ein anderes Handy senden. Auch hier gilt: KEINE NACHRICHTEN SCHLEIFEN BILDEN! Es sollte sich um ein anderes Gerät handeln!</string>
     <string name="sms_maxparts">SMS Länge</string>
-    <string name="sms_maxparts_hint">In wie viele (Teil-)SMS darf eine Benachrichtigung versendet werden?\n\n0 = unbegrenzt</string>
+    <string name="sms_maxparts_hint">Nach wie vielen Zeichen soll eine SMS abgeschnitten werden?\n\n0 = nicht abschneiden</string>
     <string name="sms_daily">Tageslimit</string>
     <string name="sms_daily_hint">Wie viele (Teil-)SMS dürfen am Tag versendet werden?\n\n0 = unbegrenzt</string>
     <string name="sms_nr">Empfängernummer</string>
