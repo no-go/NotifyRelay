@@ -35,6 +35,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.Locale;
 
@@ -42,6 +43,7 @@ public class NotificationService extends NotificationListenerService {
     //public static final String DATETIME_FORMAT = "dd.MM. HH:mm";
     public static final String ACTION_INCOMING_MSG = "click.dummer.notify_to_jabber.INCOMING_MSG";
     public static final String ACTION_NEW_FINGERPRINT = "click.dummer.notify_to_jabber.NEW_FINGERPRINT";
+    public static final String SPECIAL_MUSIC = "com.google.android.music org.lineageos.eleven com.spotify.music deezer.android.app deezer.android.tv";
     private static String TAG = "NotificationService";
     private static SharedPreferences mPreferences;
 
@@ -50,6 +52,8 @@ public class NotificationService extends NotificationListenerService {
     private String phone;
     private ArrayList<PendingIntent> sentPIs;
     private ArrayList<PendingIntent> deliveredPIs;
+
+    private ArrayList<String> specialMusicPlayer;
 
     private String lastPost = "";
 
@@ -78,6 +82,7 @@ public class NotificationService extends NotificationListenerService {
     public void onCreate() {
         super.onCreate();
         mPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        specialMusicPlayer = new ArrayList<>(Arrays.asList(SPECIAL_MUSIC.split(" ")));
     }
 
     @Override
@@ -99,12 +104,22 @@ public class NotificationService extends NotificationListenerService {
 
         Notification noti = sbn.getNotification();
         Bundle extras = noti.extras;
-        String title = extras.getString(Notification.EXTRA_TITLE);
+        String title = null;
         String pack = sbn.getPackageName();
-        String msg = (String) noti.tickerText;
+        String msg = null;
+        String msg1 = (String) noti.tickerText;
         Object obj = extras.get(Notification.EXTRA_TEXT);
         String msg2 = null;
         Drawable icon = null;
+
+        try {
+            if (title == null || title == "") {
+                SpannableString sp = (SpannableString) extras.get("android.title");
+                title = sp.toString();
+            }
+        } catch (Exception e) {
+            title = extras.getString(Notification.EXTRA_TITLE);
+        }
 
         if (obj != null) {
             msg2 = obj.toString();
@@ -117,50 +132,73 @@ public class NotificationService extends NotificationListenerService {
 
         try {
             SpannableString sp = (SpannableString) extras.get("android.text");
-            Log.d(TAG, "title "+title);
-            Log.d(TAG, "pack " + pack);
-            Log.d(TAG, "ticker " +msg);
-            Log.d(TAG, "text "+msg2);
-            Log.d(TAG, "big.text "+msg3);
+            Log.d(TAG, "title    "+ title);
+            Log.d(TAG, "pack     " + pack);
+            Log.d(TAG, "ticker   " + msg1);
+            Log.d(TAG, "text     " + msg2);
+            Log.d(TAG, "big.text " + msg3);
             if (sp != null) {
                 msg4 = sp.toString();
             }
-            Log.d(TAG, "android.text "+msg4);
-        } catch (Exception e) {
-            Log.d(TAG, e.getMessage());
+            Log.d(TAG, "android.text " + msg4);
+        } catch (Exception e) {}
+
+        msg = msg1; // ticker text is default
+
+        if (msg4 != null && msg4.length()>0) { // android.text (for old androids)
+            msg = msg4;
         }
+        if (msg2 != null && msg2.length()>0) { // extra text
+            msg = msg2;
+        }
+        if (msg3 != null && msg3.length()>0) { // favourit big text, if exists
+            msg = msg3;
+        }
+        //if (msg != null && msg1 != null && msg.length() < msg1.length()) {
+        //    msg = msg1; // reuse ticker text, because it gots more info
+        //}
 
-        if (msg4 != null && msg4.length()>0) msg = msg4;
-        if (msg2 != null && msg2.length()>0) msg = msg2;
-        if (msg3 != null && msg3.length()>0) msg = msg3;
-
-        String name="NULL";
         try {
             ApplicationInfo appi = this.getPackageManager().getApplicationInfo(pack, 0);
             icon = getPackageManager().getApplicationIcon(appi);
-            pack = getPackageManager().getApplicationLabel(appi).toString();
+            if (specialMusicPlayer.indexOf(pack) < 0) {
+                pack = getPackageManager().getApplicationLabel(appi).toString();
+            } else {
+                pack = "Music";
+            }
 
         } catch (Exception e) {
             Log.d(TAG, e.getMessage());
         }
 
-        // catch not normal message .-----------------------------
-        if (!sbn.isClearable()) return;
+        // catch not normal message -----------------------------
+        if (!pack.equals("Music") && !sbn.isClearable()) return;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            if (sbn.isGroup()) {
+            if (pack.equals("Music") && sbn.isGroup()) {
                 Log.d(TAG, "is group");
-                //return;
+                return;
             }
         }
-        if (msg == null) return;
-        if (msg.equals(lastPost) ) return;
-
-        lastPost  = msg;
+        if (title == null) title = pack;
 
         title = title.trim();
         if (title.endsWith(":")) {
             title = title.substring(0, title.lastIndexOf(":"));
         }
+
+        try {
+            Log.d(TAG, "title: "+ title);
+            Log.d(TAG, "msg: " + msg);
+            Log.d(TAG, "app: " + pack);
+
+        } catch (Exception e) {
+            Log.d(TAG, e.getMessage());
+        }
+
+        if (msg == null) return;
+        if ((title +msg).equals(lastPost) ) return;
+
+        lastPost = title + msg;
 
         //sendNetBroadcast(title, msg, pack, formatOut.format(new Date()), icon);
         Intent i = new Intent(ACTION_INCOMING_MSG);
