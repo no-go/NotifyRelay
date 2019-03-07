@@ -41,6 +41,7 @@ import java.util.Locale;
 
 public class NotificationService extends NotificationListenerService {
     //public static final String DATETIME_FORMAT = "dd.MM. HH:mm";
+    public static final int DEFAULTPRIO = 4;
     public static final String ACTION_INCOMING_MSG = "click.dummer.notify_to_jabber.INCOMING_MSG";
     public static final String ACTION_NEW_FINGERPRINT = "click.dummer.notify_to_jabber.NEW_FINGERPRINT";
     public static final String SPECIAL_MUSIC = "com.google.android.music org.lineageos.eleven com.spotify.music deezer.android.app deezer.android.tv";
@@ -229,7 +230,7 @@ public class NotificationService extends NotificationListenerService {
         new SendJabberTask().execute(title, msg, pack, time);
 
         // ++++ Gotify
-        sendGotify(title, msg, pack, time);
+        sendGotify(title, msg, pack);
 
         // ++++ SMS
         phone = mPreferences.getString("phone", "").trim();
@@ -245,13 +246,43 @@ public class NotificationService extends NotificationListenerService {
             sentPIs.add(sentPI);
             deliveredPIs.add(deliveredPI);
 
+
+
             String message = "";
             if (!time.equals("")) time = time + "\n";
+
             if (pack.equals("")) {
-                message = time + title + ": " + msg;
+                if (title.length() > 0 && msg.startsWith(title)) title = "";
+                if (time.equals("")) {
+                    if (title.equals("")) {
+                        message = msg;
+                    } else {
+                        message = title + ": " + msg;
+                    }
+                } else {
+                    if (title.equals("")) {
+                        message = time + msg;
+                    } else {
+                        message = time + title + ": " + msg;
+                    }
+                }
             } else {
-                message = "["+pack+"] " + time + title + ": " + msg;
+                if (title.length() > 0 && msg.startsWith(title)) title = "";
+                if (time.equals("")) {
+                    if (title.equals("")) {
+                        message = "["+pack+"] " + msg;
+                    } else {
+                        message = "["+pack+"] " + title + ": " + msg;
+                    }
+                } else {
+                    if (title.equals("")) {
+                        message = "["+pack+"] " + time + msg;
+                    } else {
+                        message = "["+pack+"] " + time + title + ": " + msg;
+                    }
+                }
             }
+
 
             int limit = mPreferences.getInt("maxchars", 140);
             if (limit>0 && message.length()>limit) {
@@ -274,7 +305,6 @@ public class NotificationService extends NotificationListenerService {
         String title = strings[0];
         String message = strings[1];
         String pack = strings[2];
-        String time = strings[3];
 
         String gotifyUrl = "";
         String appToken = "";
@@ -347,19 +377,26 @@ public class NotificationService extends NotificationListenerService {
                 }
                 GotifyMessageService gms = retrofit.create(GotifyMessageService.class);
                 GotifyMessage gotifyMessage;
+
+
+
                 if (pack.equals("")) {
-                    gotifyMessage = new GotifyMessage(
-                            4,
-                            title,
-                            message
-                    );
+                    if (title.length() > 0 && message.startsWith(title)) {
+                        message = message.substring(0, title.length()).trim();
+                    }
+                    gotifyMessage = new GotifyMessage(DEFAULTPRIO, title, message);
+
                 } else {
-                    gotifyMessage = new GotifyMessage(
-                            4,
-                            pack,
-                            title + ": " + message
-                    );
+                    if (title.length() > 0 && message.startsWith(title)) {
+                        message = message.substring(0, title.length()).trim();
+                    }
+                    if (title.length() > 0) {
+                        gotifyMessage = new GotifyMessage(DEFAULTPRIO, pack, title + ": " + message);
+                    } else {
+                        gotifyMessage = new GotifyMessage(DEFAULTPRIO, pack, message);
+                    }
                 }
+
 
                 Call<GotifyMessage> call = gms.createMessage(appToken, gotifyMessage);
                 call.execute();
@@ -408,12 +445,49 @@ public class NotificationService extends NotificationListenerService {
                 if (connection.isConnected()) {
                     ChatManager chatManager = ChatManager.getInstanceFor(connection);
                     Chat chat = chatManager.createChat(toJID);
+
+
+
+
+
                     if (!time.equals("")) time = time + "\n";
+
                     if (pack.equals("")) {
-                        chat.sendMessage(time + title + ": " + message);
+                        if (title.length() > 0 && message.startsWith(title)) title = "";
+                        if (time.equals("")) {
+                            if (title.equals("")) {
+                                chat.sendMessage(message);
+                            } else {
+                                chat.sendMessage(title + ": " + message);
+                            }
+                        } else {
+                            if (title.equals("")) {
+                                chat.sendMessage(time + message);
+                            } else {
+                                chat.sendMessage(time + title + ": " + message);
+                            }
+                        }
                     } else {
-                        chat.sendMessage("["+pack+"] " + time + title + ": " + message);
+                        if (title.length() > 0 && message.startsWith(title)) title = "";
+                        if (time.equals("")) {
+                            if (title.equals("")) {
+                                chat.sendMessage("["+pack+"] " + message);
+                            } else {
+                                chat.sendMessage("["+pack+"] " + title + ": " + message);
+                            }
+                        } else {
+                            if (title.equals("")) {
+                                chat.sendMessage("["+pack+"] " + time + message);
+                            } else {
+                                chat.sendMessage("["+pack+"] " + time + title + ": " + message);
+                            }
+                        }
                     }
+
+
+
+
+
                     //connection.disconnect();
                 }
             } catch (Exception e) {
