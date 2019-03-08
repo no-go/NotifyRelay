@@ -3,3 +3,7 @@ Sometimes a new giant smartphone is too big for me at parties. It is nice to be 
 The app sends all text notifications to a xmpp jabber account. It uses the <a href="https://github.com/igniterealtime/Smack/">Smack lib</a> (Apache 2.0 license) for this.
 
 Alternative: Use your Gotify server and an application token to submit the notifications. It uses the <a href="https://github.com/square/retrofit/">Retrofit lib</a> (Apache 2.0 license) for the REST request.
+
+<b>Read from Gotify<b>
+
+I improved a Android <a href="https://gitlab.com/deadlockz/gotifyread">Gotify-Read</a> App, to read and delete messages. Additionaly I improved a <a href="https://gitlab.com/deadlockz/gotifyread/tree/master/Desktop">Desktop App</a> with nodeJS and <a href="https://electronjs.org/">electron</a> to read e.g. the playing music titles on my notebook. 

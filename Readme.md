@@ -14,6 +14,14 @@ uses [smack](https://github.com/igniterealtime/Smack/) lib for this.
 Alternative: use your [gotify server](https://github.com/gotify/server) and an application token to
 submit the notifications. It uses the [Retrofit](https://github.com/square/retrofit) lib for the REST request.
 
+## Read from Gotify
+
+I improved a Android [Gotify Read](https://gitlab.com/deadlockz/gotifyread) App, to read and delete messages. Additionaly I improve a 
+[Desktop App](https://gitlab.com/deadlockz/gotifyread/tree/master/Desktop) with nodeJS
+and [electron](https://electronjs.org/) to read e.g. the playing music titles on my notebook. 
+
+[GotifyRead Sources](https://gitlab.com/deadlockz/gotifyread)
+
 ## Gotify with self signed cert
 
 If a X509Certificate is detected, domain is checked and fingerprint is store.
