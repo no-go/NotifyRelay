@@ -24,11 +24,15 @@ android {
     }
 }
 
+ext {
+    smackVersion="4.1.6"
+}
+
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    implementation 'com.android.support:appcompat-v7:25.3.1'
-    implementation "org.igniterealtime.smack:smack-android:4.1.6"
-    implementation "org.igniterealtime.smack:smack-tcp:4.1.6"
+    implementation 'com.android.support:appcompat-v7:25.4.0'
+    implementation "org.igniterealtime.smack:smack-android:$smackVersion"
+    implementation "org.igniterealtime.smack:smack-tcp:$smackVersion"
     implementation 'com.squareup.retrofit2:retrofit:2.5.0'
     implementation 'com.squareup.retrofit2:converter-gson:2.5.0'
 }
