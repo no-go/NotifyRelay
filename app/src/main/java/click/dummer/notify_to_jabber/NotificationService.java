@@ -19,13 +19,9 @@ import android.text.SpannableString;
 import android.util.Log;
 
 import org.jivesoftware.smack.AbstractXMPPConnection;
-import org.jivesoftware.smack.packet.Message;
+import org.jivesoftware.smack.chat.Chat;
+import org.jivesoftware.smack.chat.ChatManager;
 import org.jivesoftware.smack.tcp.XMPPTCPConnection;
-import org.jivesoftware.smack.tcp.XMPPTCPConnectionConfiguration;
-import org.jxmpp.jid.EntityBareJid;
-import org.jxmpp.jid.Jid;
-import org.jxmpp.jid.impl.JidCreate;
-import org.jxmpp.stringprep.XmppStringprepException;
 
 import okhttp3.OkHttpClient;
 import retrofit2.converter.gson.GsonConverterFactory;
@@ -436,77 +432,67 @@ public class NotificationService extends NotificationListenerService {
             }
             if (fromJID.equals("") || toJID.equals("") || pass.equals("")) return null;
 
-            EntityBareJid fromJid = null;
-            try {
-                fromJid = JidCreate.entityBareFrom(toJID);
-            } catch (XmppStringprepException e) {
-                Log.d(TAG, fromJID + " is not a valid XMPP address", e);
-                return null;
-            }
-
-            Jid toJid;
-            try {
-                toJid = JidCreate.from(toJID);
-            } catch (XmppStringprepException e) {
-                Log.d(TAG, "Recipient " + toJID + " is not a valid XMPP address", e);
-                return null;
-            }
-
-            Message messageStanza = new Message(toJid);
-
-            if (!time.equals("")) time = time + "\n";
-
-            if (pack.equals("")) {
-                if (title.length() > 0 && message.startsWith(title)) title = "";
-                if (time.equals("")) {
-                    if (title.equals("")) {
-                        messageStanza.setBody(message);
-                    } else {
-                        messageStanza.setBody(title + ": " + message);
-                    }
-                } else {
-                    if (title.equals("")) {
-                        messageStanza.setBody(time + message);
-                    } else {
-                        messageStanza.setBody(time + title + ": " + message);
-                    }
-                }
-            } else {
-                if (title.length() > 0 && message.startsWith(title)) title = "";
-                if (time.equals("")) {
-                    if (title.equals("")) {
-                        messageStanza.setBody("["+pack+"] " + message);
-                    } else {
-                        messageStanza.setBody("["+pack+"] " + title + ": " + message);
-                    }
-                } else {
-                    if (title.equals("")) {
-                        messageStanza.setBody("["+pack+"] " + time + message);
-                    } else {
-                        messageStanza.setBody("["+pack+"] " + time + title + ": " + message);
-                    }
-                }
-            }
-
-            XMPPTCPConnectionConfiguration connectionConfiguration = XMPPTCPConnectionConfiguration.builder()
-                    .setUsernameAndPassword(fromJid.getLocalpart(), pass)
-                    .setXmppDomain(fromJid.asDomainBareJid())
-                    .build();
-
-            XMPPTCPConnection connection = new XMPPTCPConnection(connectionConfiguration);
-
+            AbstractXMPPConnection connection = new XMPPTCPConnection(
+                    fromJID.substring(0, fromJID.lastIndexOf("@")),
+                    pass,
+                    fromJID.substring(fromJID.lastIndexOf("@")+1)
+            );
             try {
                 if (!connection.isConnected()) {
                     connection.connect().login();
                 }
 
-                connection.sendStanza(messageStanza);
+                if (connection.isConnected()) {
+                    ChatManager chatManager = ChatManager.getInstanceFor(connection);
+                    Chat chat = chatManager.createChat(toJID);
+
+
+
+
+
+                    if (!time.equals("")) time = time + "\n";
+
+                    if (pack.equals("")) {
+                        if (title.length() > 0 && message.startsWith(title)) title = "";
+                        if (time.equals("")) {
+                            if (title.equals("")) {
+                                chat.sendMessage(message);
+                            } else {
+                                chat.sendMessage(title + ": " + message);
+                            }
+                        } else {
+                            if (title.equals("")) {
+                                chat.sendMessage(time + message);
+                            } else {
+                                chat.sendMessage(time + title + ": " + message);
+                            }
+                        }
+                    } else {
+                        if (title.length() > 0 && message.startsWith(title)) title = "";
+                        if (time.equals("")) {
+                            if (title.equals("")) {
+                                chat.sendMessage("["+pack+"] " + message);
+                            } else {
+                                chat.sendMessage("["+pack+"] " + title + ": " + message);
+                            }
+                        } else {
+                            if (title.equals("")) {
+                                chat.sendMessage("["+pack+"] " + time + message);
+                            } else {
+                                chat.sendMessage("["+pack+"] " + time + title + ": " + message);
+                            }
+                        }
+                    }
+
+
+
+
+
+                    //connection.disconnect();
+                }
             } catch (Exception e) {
                 Log.d(TAG, "Exception: " + e.getMessage());
-            } finally {
-                connection.disconnect();
             }
-
             return null;
         }
     }
